@@ -20,8 +20,8 @@ class TransferRequest(APIView):
         responses={200: TransferSerializer()},
     )
     def post(self, request):
-        activation_code = request.data
-        duc_address = request.data
+        activation_code = request.data.get('activation_code')
+        duc_address = request.data.get('duc_address')
 
         voucher = validate_voucher(activation_code)
         transfer = make_transfer(voucher, duc_address)
