@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
@@ -26,4 +27,4 @@ class TransferRequest(APIView):
         voucher = validate_voucher(activation_code)
         transfer = make_transfer(voucher, duc_address)
 
-        return TransferSerializer().to_representation(transfer)
+        return Response(TransferSerializer().to_representation(transfer))
