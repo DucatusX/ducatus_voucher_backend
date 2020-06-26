@@ -69,4 +69,4 @@ class DucatuscoreInterface:
                 .format(amount=amount, addr=address)
             print(err, flush=True)
             print(e, flush=True)
-            raise DucatuscoreInterfaceException(err)
+            raise DucatuscoreInterfaceException(err + '\n' + str(e))
