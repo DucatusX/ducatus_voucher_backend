@@ -41,3 +41,10 @@ def make_transfer(voucher, duc_address):
     voucher.save()
 
     return transfer
+
+
+def confirm_transfer(message):
+    tx_hash = message.get('txHash')
+    transfer = Transfer.objects.get(tx_hash=tx_hash)
+    transfer.transfer_status = 'CONFIRMED'
+    transfer.save()

@@ -25,21 +25,20 @@ class VoucherViewSet(viewsets.ModelViewSet):
         responses={200: VoucherSerializer()},
     )
     def create(self, request, *args, **kwargs):
-        super().create(request, *args, **kwargs)
+        return super().create(request, *args, **kwargs)
 
 
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
                 'voucher_code': openapi.Schema(type=openapi.TYPE_STRING),
                 'duc_amount': openapi.Schema(type=openapi.TYPE_STRING),
                 'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN)
             },
-            required=['id']
+            required=['voucher_code', 'duc_amount']
         ),
         responses={200: VoucherSerializer()},
     )
     def update(self, request, *args, **kwargs):
-        super().update(request, *args, **kwargs)
+        return super().update(request, *args, **kwargs)
