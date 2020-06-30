@@ -48,5 +48,6 @@ urlpatterns = [
     url(r'^api/v1/redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     url(r'^api/v1/transfer/', TransferRequest.as_view()),
     url(r'^api/v1/', include(router.urls)),
+    # url(r'^api/v1/vouchers_list/', VoucherListRequest.as_view()),
     url(r'^api/v1/rest-auth/', include('rest_auth.urls')),
 ]
