@@ -20,7 +20,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
             type=openapi.TYPE_OBJECT,
             properties={
                 'voucher_code': openapi.Schema(type=openapi.TYPE_STRING),
-                'duc_amount': openapi.Schema(type=openapi.TYPE_STRING),
+                'duc_amount': openapi.Schema(type=openapi.TYPE_INTEGER),
                 'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN)
             },
             required=['voucher_code', 'duc_amount']
@@ -47,7 +47,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
             type=openapi.TYPE_OBJECT,
             properties={
                 'voucher_code': openapi.Schema(type=openapi.TYPE_STRING),
-                'duc_amount': openapi.Schema(type=openapi.TYPE_STRING),
+                'duc_amount': openapi.Schema(type=openapi.TYPE_INTEGER),
                 'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN)
             },
             required=['voucher_code', 'duc_amount']
