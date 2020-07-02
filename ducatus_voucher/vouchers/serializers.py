@@ -23,6 +23,11 @@ class VoucherSerializer(serializers.ModelSerializer):
         instance = super().create(validated_data)
         return instance
 
+    def update(self, instance, validated_data):
+        validated_data['duc_amount'] *= DECIMALS['DUC']
+        instance = super().update(instance, validated_data)
+        return instance
+
     def to_representation(self, instance):
         res = super().to_representation(instance)
         res['duc_amount'] = int(res['duc_amount']) // DECIMALS['DUC']
