@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.exceptions import PermissionDenied, APIException
 from django.utils import timezone
@@ -5,6 +7,7 @@ from django.utils import timezone
 from ducatus_voucher.vouchers.models import Voucher
 from ducatus_voucher.transfers.models import Transfer
 from ducatus_voucher.litecoin_rpc import DucatuscoreInterface, DucatuscoreInterfaceException
+from ducatus_voucher.consts import DECIMALS, USD_RATES
 
 
 def validate_voucher(activation_code):
@@ -23,12 +26,13 @@ def validate_voucher(activation_code):
 
 
 def make_transfer(voucher, duc_address):
-    transfer = Transfer(voucher=voucher, duc_amount=voucher.duc_amount, duc_address=duc_address)
+    duc_amount = convert_usd2duc(usd_amount=voucher.duc_amount)
+    transfer = Transfer(voucher=voucher, duc_amount=duc_amount, duc_address=duc_address)
     transfer.save()
 
     try:
         rpc = DucatuscoreInterface()
-        tx_hash = rpc.node_transfer(duc_address, voucher.duc_amount)
+        tx_hash = rpc.node_transfer(duc_address, duc_amount)
     except DucatuscoreInterfaceException as err:
         raise APIException(detail=str(err))
 
@@ -48,3 +52,8 @@ def confirm_transfer(message):
     transfer = Transfer.objects.get(tx_hash=tx_hash)
     transfer.transfer_status = 'CONFIRMED'
     transfer.save()
+
+
+def convert_usd2duc(usd_amount):
+    duc_amount = Decimal(str(usd_amount / USD_RATES['DUC'])) * DECIMALS['DUC']
+    return duc_amount

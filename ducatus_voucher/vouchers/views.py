@@ -2,7 +2,6 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAdminUser
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
@@ -20,7 +19,7 @@ class VoucherViewSet(viewsets.ModelViewSet):
             type=openapi.TYPE_OBJECT,
             properties={
                 'voucher_code': openapi.Schema(type=openapi.TYPE_STRING),
-                'duc_amount': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'duc_amount': openapi.Schema(type=openapi.TYPE_NUMBER),
                 'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN)
             },
             required=['voucher_code', 'duc_amount']

@@ -17,18 +17,3 @@ class VoucherSerializer(serializers.ModelSerializer):
             'publish_date': {'read_only': True},
             'activation_date': {'read_only': True}
         }
-
-    def create(self, validated_data):
-        validated_data['duc_amount'] *= DECIMALS['DUC']
-        instance = super().create(validated_data)
-        return instance
-
-    def update(self, instance, validated_data):
-        validated_data['duc_amount'] *= DECIMALS['DUC']
-        instance = super().update(instance, validated_data)
-        return instance
-
-    def to_representation(self, instance):
-        res = super().to_representation(instance)
-        res['duc_amount'] = int(res['duc_amount']) // DECIMALS['DUC']
-        return res
