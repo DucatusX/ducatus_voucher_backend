@@ -11,3 +11,8 @@ class TransferSerializer(serializers.ModelSerializer):
             'tx_hash': {'read_only': True},
             'transfer_status': {'read_only': True},
         }
+
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        res['usd_amount'] = instance.voucher.usd_amount
+        return res
