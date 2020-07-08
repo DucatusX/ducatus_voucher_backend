@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from ducatus_voucher.transfers.models import Transfer
+from ducatus_voucher.consts import DECIMALS
 
 
 class TransferSerializer(serializers.ModelSerializer):
@@ -15,4 +16,5 @@ class TransferSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         res = super().to_representation(instance)
         res['usd_amount'] = instance.voucher.usd_amount
+        res['duc_amount'] = int(res['duc_amount']) // DECIMALS['DUC']
         return res
