@@ -123,3 +123,4 @@ settings_local.py
 gunicorn.conf.py
 db.sqlite3
 .vscode/
+node_modules/

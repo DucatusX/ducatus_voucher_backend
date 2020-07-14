@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'ducatus_voucher.vouchers',
     'ducatus_voucher.transfers',
+    'ducatus_voucher.freezing',
 ]
 
 MIDDLEWARE = [
@@ -129,6 +130,8 @@ ACCOUNT_LOGOUT_ON_GET = True
 STATIC_URL = '/static/'
 
 SHELL_PLUS = 'ptpython'
+
+CLTV_DIR = os.path.join(BASE_DIR, 'ducatus_voucher/freezing/cltv')
 
 try:
     from ducatus_voucher.settings_local import *
