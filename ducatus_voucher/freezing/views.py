@@ -1,3 +1,11 @@
-from django.shortcuts import render
+from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
 
-# Create your views here.
+
+class FreezeRequest(APIView):
+
+    @swagger_auto_schema()
+    def post(self, request):
+        pass
+
+
