@@ -3,6 +3,7 @@ from rest_framework.permissions import IsAdminUser
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework.exceptions import ValidationError
 
 from ducatus_voucher.vouchers.models import Voucher
@@ -20,13 +21,14 @@ class VoucherViewSet(viewsets.ModelViewSet):
             properties={
                 'voucher_code': openapi.Schema(type=openapi.TYPE_STRING),
                 'usd_amount': openapi.Schema(type=openapi.TYPE_NUMBER),
-                'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN)
+                'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                'lock_days': openapi.Schema(type=openapi.TYPE_INTEGER),
             },
             required=['voucher_code', 'usd_amount']
         ),
         responses={200: VoucherSerializer()},
     )
-    def create(self, request, *args, **kwargs):
+    def create(self, request: Request, *args, **kwargs):
         if isinstance(request.data, list):
             voucher_list = request.data
             for voucher in voucher_list:
@@ -39,19 +41,18 @@ class VoucherViewSet(viewsets.ModelViewSet):
         else:
             return super().create(request, *args, **kwargs)
 
-
-
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
                 'voucher_code': openapi.Schema(type=openapi.TYPE_STRING),
-                'usd_amount': openapi.Schema(type=openapi.TYPE_INTEGER),
-                'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN)
+                'usd_amount': openapi.Schema(type=openapi.TYPE_NUMBER),
+                'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                'lock_days': openapi.Schema(type=openapi.TYPE_INTEGER),
             },
             required=['voucher_code', 'usd_amount']
         ),
         responses={200: VoucherSerializer()},
     )
-    def update(self, request, *args, **kwargs):
+    def update(self, request: Request, *args, **kwargs):
         return super().update(request, *args, **kwargs)

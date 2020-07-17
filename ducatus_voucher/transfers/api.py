@@ -25,7 +25,7 @@ def validate_voucher(activation_code):
     return voucher
 
 
-def make_transfer(voucher, duc_address):
+def make_transfer(voucher, duc_address, duc_public_key=None):
     duc_amount = convert_usd2duc(usd_amount=voucher.usd_amount)
     transfer = Transfer(voucher=voucher, duc_amount=duc_amount, duc_address=duc_address)
     transfer.save()
