@@ -1,6 +1,8 @@
 import os
 import datetime
+from django.utils import timezone
 
+from ducatus_voucher.vouchers.models import Voucher
 from ducatus_voucher.freezing.models import FreezingVoucher
 from ducatus_voucher.bip32_ducatus import DucatusWallet
 from ducatus_voucher.settings import duc_xpublic_key
@@ -27,24 +29,44 @@ def get_redeem_info(voucher_id):
 def generate_child_public_key(voucher_id):
     duc_root_key = DucatusWallet.deserialize(duc_xpublic_key)
     duc_child = duc_root_key.get_child(voucher_id, is_prime=False)
-    duc_child_public = duc_child.get_private_key_hex()
+    duc_child_public = duc_child.get_public_key_hex().decode()
 
     return duc_child_public
 
 
-def save_cltv_data(receiver_public_key, backend_public_key, voucher_id, user_duc_address):
-    pass
+def save_cltv_data(wallet_id, frozen_at, redeem_script, locked_duc_address, user_duc_address, user_public_key,
+                   backend_public_key, voucher, lock_time):
+    frozen_voucher = FreezingVoucher()
+    frozen_voucher.wallet_id = wallet_id
+    frozen_voucher.frozen_at = frozen_at
+    frozen_voucher.redeem_script = redeem_script
+    frozen_voucher.locked_duc_address = locked_duc_address
+    frozen_voucher.user_duc_address = user_duc_address
+    frozen_voucher.user_public_key = user_public_key
+    frozen_voucher.backend_public_key = backend_public_key
+    frozen_voucher.lock_time = lock_time
+    frozen_voucher.save()
+
+    voucher.freezing_details = frozen_voucher
+    voucher.save()
+
+    print('voucher is frozen', frozen_voucher.__dict__, flush=True)
 
 
-def generate_cltv(receiver_public_key, backend_public_key, lock_time, voucher_id):
+def generate_cltv(receiver_public_key: str, voucher: Voucher, user_duc_address, wallet_id):
+    backend_public_key = generate_child_public_key(voucher.id)
+    frozen_at = timezone.now()
+    lock_date = frozen_at + datetime.timedelta(days=voucher.lock_days)
+    lock_time = int(lock_date.timestamp())
+
     bash_command = 'node {script_path} {receiver_public_key} {backend_public_key} {lock_time} {voucher_id} {files_dir}' \
         .format(script_path=os.path.join(CLTV_DIR, 'cltv_generation.js'), receiver_public_key=receiver_public_key,
-                backend_public_key=backend_public_key, lock_time=lock_time, voucher_id=voucher_id, files_dir=CLTV_DIR)
+                backend_public_key=backend_public_key, lock_time=lock_time, voucher_id=voucher.id, files_dir=CLTV_DIR)
     if os.system(bash_command):
         raise Exception('error due redeem script generation')
 
-    redeem_script_file = 'redeemScript-{}.txt'.format(voucher_id)
-    lock_address_file = 'lockAddress-{}.txt'.format(voucher_id)
+    redeem_script_file = 'redeemScript-{}.txt'.format(voucher.id)
+    lock_address_file = 'lockAddress-{}.txt'.format(voucher.id)
 
     with open(os.path.join(CLTV_DIR, redeem_script_file), 'r') as file:
         redeem_script = file.read()
@@ -54,4 +76,7 @@ def generate_cltv(receiver_public_key, backend_public_key, lock_time, voucher_id
     os.remove(os.path.join(CLTV_DIR, redeem_script_file))
     os.remove(os.path.join(CLTV_DIR, lock_address_file))
 
-    return redeem_script, lock_address
+    save_cltv_data(wallet_id, frozen_at, redeem_script, lock_address, user_duc_address, receiver_public_key,
+                   backend_public_key, voucher, lock_time)
+
+    return lock_address
