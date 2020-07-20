@@ -15,7 +15,7 @@ from ducatus_voucher.freezing.api import get_redeem_info, get_unused_frozen_vouc
     )
 @api_view(http_method_names=['GET'])
 def get_withdraw_info(request: Request):
-    voucher_id = request.data.get('voucher_id')
+    voucher_id = request.query_params.get('voucher_id')
 
     response_data = get_redeem_info(voucher_id)
 
@@ -29,7 +29,7 @@ def get_withdraw_info(request: Request):
     )
 @api_view(http_method_names=['GET'])
 def get_frozen_vouchers(request: Request):
-    wallet_id = request.data.get('wallet_id')
+    wallet_id = request.query_params.get('wallet_id')
 
     unused_frozen_vouchers = get_unused_frozen_vouchers(wallet_id)
     response_data = FreezingVoucherSerializer(many=True).to_representation(unused_frozen_vouchers)
