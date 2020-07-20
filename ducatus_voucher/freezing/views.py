@@ -11,13 +11,14 @@ from ducatus_voucher.freezing.api import get_redeem_info, get_unused_frozen_vouc
 @swagger_auto_schema(
         method='get',
         manual_parameters=[openapi.Parameter('voucher_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)],
-        responses={200: """example:\n{'redeem_script': "123123123132", 'lock_time': 131243211}"""},
+        responses={200: FreezingVoucherSerializer()},
     )
 @api_view(http_method_names=['GET'])
 def get_withdraw_info(request: Request):
     voucher_id = request.query_params.get('voucher_id')
 
-    response_data = get_redeem_info(voucher_id)
+    frozen_voucher = get_redeem_info(voucher_id)
+    response_data = FreezingVoucherSerializer().to_representation(frozen_voucher)
 
     return Response(response_data)
 
@@ -35,9 +36,3 @@ def get_frozen_vouchers(request: Request):
     response_data = FreezingVoucherSerializer(many=True).to_representation(unused_frozen_vouchers)
 
     return Response(response_data)
-
-
-# class VoucherViewSet(viewsets.ModelViewSet):
-#     queryset = Voucher.objects.all()
-#     serializer_class = VoucherSerializer
-#     permission_classes = [IsAdminUser]

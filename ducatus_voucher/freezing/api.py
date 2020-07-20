@@ -2,6 +2,8 @@ import os
 import datetime
 from django.utils import timezone
 
+from rest_framework.exceptions import NotFound
+
 from ducatus_voucher.vouchers.models import Voucher
 from ducatus_voucher.freezing.models import FreezingVoucher
 from ducatus_voucher.bip32_ducatus import DucatusWallet
@@ -15,15 +17,12 @@ def get_unused_frozen_vouchers(wallet_id):
 
 
 def get_redeem_info(voucher_id):
-    frozen_voucher = FreezingVoucher.objects.get(voucher_id)
+    try:
+        frozen_voucher = FreezingVoucher.objects.get(voucher_id)
+    except FreezingVoucher.DoesNotExist:
+        raise NotFound('frozen voucher with this id does not exist')
 
-    withdraw_date = frozen_voucher.frozen_at + datetime.timedelta(days=frozen_voucher.voucher.lock_days)
-    redeem_info = {
-        'redeem_script_hex': frozen_voucher.redeem_script,
-        'lock_time': int(withdraw_date.timestamp()),
-    }
-
-    return redeem_info
+    return frozen_voucher
 
 
 def generate_child_public_key(voucher_id):
