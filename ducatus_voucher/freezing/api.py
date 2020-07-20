@@ -18,7 +18,7 @@ def get_unused_frozen_vouchers(wallet_id):
 
 def get_redeem_info(voucher_id):
     try:
-        frozen_voucher = FreezingVoucher.objects.get(voucher_id)
+        frozen_voucher = FreezingVoucher.objects.get(id=voucher_id)
     except FreezingVoucher.DoesNotExist:
         raise NotFound('frozen voucher with this id does not exist')
 
