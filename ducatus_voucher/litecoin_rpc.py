@@ -59,10 +59,10 @@ class DucatuscoreInterface:
     def node_transfer(self, address, amount):
         try:
             value = amount / DECIMALS['DUC']
-            print('try sending {value} DUC to {addr}'.format(value=value, addr=address))
+            print('try sending {value} DUC to {addr}'.format(value=value, addr=address), flush=True)
             self.rpc.walletpassphrase(self.settings['wallet_password'], 30)
             res = self.rpc.sendtoaddress(address, value)
-            print(res)
+            print(res, flush=True)
             return res
         except JSONRPCException as e:
             err = 'DUCATUS TRANSFER ERROR: transfer for {amount} DUC for {addr} failed' \
