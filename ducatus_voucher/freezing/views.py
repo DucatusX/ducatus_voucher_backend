@@ -9,10 +9,10 @@ from ducatus_voucher.freezing.api import get_redeem_info, get_unused_frozen_vouc
 
 
 @swagger_auto_schema(
-        method='get',
-        manual_parameters=[openapi.Parameter('voucher_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)],
-        responses={200: FreezingVoucherSerializer()},
-    )
+    method='get',
+    manual_parameters=[openapi.Parameter('voucher_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)],
+    responses={200: FreezingVoucherSerializer()},
+)
 @api_view(http_method_names=['GET'])
 def get_withdraw_info(request: Request):
     voucher_id = request.query_params.get('voucher_id')
@@ -24,10 +24,10 @@ def get_withdraw_info(request: Request):
 
 
 @swagger_auto_schema(
-        method='get',
-        manual_parameters=[openapi.Parameter('wallet_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)],
-        responses={200: FreezingVoucherSerializer()},
-    )
+    method='get',
+    manual_parameters=[openapi.Parameter('wallet_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)],
+    responses={200: FreezingVoucherSerializer()},
+)
 @api_view(http_method_names=['GET'])
 def get_frozen_vouchers(request: Request):
     wallet_id = request.query_params.get('wallet_id')

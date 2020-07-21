@@ -29,6 +29,7 @@ def generate_child_public_key(voucher_id):
     duc_root_key = DucatusWallet.deserialize(duc_xpublic_key)
     duc_child = duc_root_key.get_child(voucher_id, is_prime=False)
     duc_child_public = duc_child.get_public_key_hex().decode()
+    print('backend public key generated {}'.format(duc_child_public), flush=True)
 
     return duc_child_public
 
