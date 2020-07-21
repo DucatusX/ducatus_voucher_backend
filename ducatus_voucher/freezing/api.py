@@ -11,8 +11,8 @@ from ducatus_voucher.settings import duc_xpublic_key
 from ducatus_voucher.settings import CLTV_DIR
 
 
-def get_unused_frozen_vouchers(wallet_id):
-    vouchers = FreezingVoucher.objects.filter(wallet_id=wallet_id, withdrawn=False)
+def get_unused_frozen_vouchers(wallet_ids):
+    vouchers = FreezingVoucher.objects.filter(wallet_id__in=wallet_ids, withdrawn=False)
     return vouchers
 
 

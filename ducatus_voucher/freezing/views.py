@@ -25,14 +25,15 @@ def get_withdraw_info(request: Request):
 
 @swagger_auto_schema(
     method='get',
-    manual_parameters=[openapi.Parameter('wallet_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)],
+    manual_parameters=[openapi.Parameter('wallet_ids', openapi.IN_QUERY, type=openapi.TYPE_ARRAY,
+                                         items=openapi.Items(type=openapi.TYPE_STRING))],
     responses={200: FreezingVoucherSerializer()},
 )
 @api_view(http_method_names=['GET'])
 def get_frozen_vouchers(request: Request):
-    wallet_id = request.query_params.get('wallet_id')
+    wallet_ids = request.query_params.get('wallet_ids').split(',')
 
-    unused_frozen_vouchers = get_unused_frozen_vouchers(wallet_id)
+    unused_frozen_vouchers = get_unused_frozen_vouchers(wallet_ids)
     response_data = FreezingVoucherSerializer(many=True).to_representation(unused_frozen_vouchers)
 
     return Response(response_data)
