@@ -38,6 +38,6 @@ class TransferRequest(APIView):
 
         lock_address = generate_cltv(user_public_key, voucher, duc_address, wallet_id)
         transfer = make_transfer(voucher, lock_address)
-        save_vout_number(voucher)
+        save_vout_number(transfer)
 
         return Response(TransferSerializer().to_representation(transfer))
