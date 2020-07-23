@@ -4,7 +4,9 @@ from django.utils import timezone
 
 from rest_framework.exceptions import NotFound
 
+from ducatus_voucher.litecoin_rpc import DucatuscoreInterface
 from ducatus_voucher.vouchers.models import Voucher
+from ducatus_voucher.transfers.models import Transfer
 from ducatus_voucher.freezing.models import FreezingVoucher
 from ducatus_voucher.bip32_ducatus import DucatusWallet
 from ducatus_voucher.settings import duc_xpublic_key
@@ -80,3 +82,16 @@ def generate_cltv(receiver_public_key: str, voucher: Voucher, user_duc_address, 
                    backend_public_key, voucher, lock_time)
 
     return lock_address
+
+
+def save_vout_number(transfer: Transfer):
+    interface = DucatuscoreInterface()
+    tx_data = interface.rpc.gettransaction(transfer.tx_hash)
+    vout_number = tx_data['details'][0]['vout']
+    transfer.vout_number = vout_number
+    transfer.save()
+
+
+def get_duc_transfer_fee():
+    interface = DucatuscoreInterface()
+    return interface.rpc.getinfo()['relayfee'] * 10 ** 8

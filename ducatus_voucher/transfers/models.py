@@ -10,3 +10,4 @@ class Transfer(models.Model):
     tx_hash = models.CharField(max_length=100, null=True, default=None)
     duc_address = models.CharField(max_length=50)
     transfer_status = models.CharField(max_length=50, default='WAITING_FOR_TRANSFER')
+    vout_number = models.IntegerField(null=True, default=None)

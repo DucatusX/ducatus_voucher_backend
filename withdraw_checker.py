@@ -24,9 +24,11 @@ if __name__ == '__main__':
         interface = DucatuscoreInterface()
         for frozen_voucher in frozen_vouchers:
             try:
-                transfer_tx_hash = frozen_voucher.voucher.transfer_set.first().tx_hash
-                if transfer_tx_hash:
-                    unspent_tx = interface.rpc.gettxout(frozen_voucher.voucher.transfer_set.first().tx_hash, 0)
+                transfer_instance = frozen_voucher.voucher.transfer_set.first()
+                tx_hash = transfer_instance.tx_hash
+                if tx_hash:
+                    vout_number = transfer_instance.vout_number
+                    unspent_tx = interface.rpc.gettxout(tx_hash, vout_number)
                     if not unspent_tx:
                         frozen_voucher.withdrawn = True
                         frozen_voucher.save()
