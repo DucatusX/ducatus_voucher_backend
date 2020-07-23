@@ -16,7 +16,7 @@ class FreezingVoucherSerializer(serializers.ModelSerializer):
         res['duc_amount'] = int(transfer_instance.duc_amount) // DECIMALS['DUC']
         res['usd_amount'] = instance.voucher.usd_amount
         res['tx_hash'] = transfer_instance.tx_hash
-        res['vout_number'] = transfer_instance.tx_hash
+        res['vout_number'] = transfer_instance.vout_number
         res['sending_amount'] = int(transfer_instance.duc_amount - get_duc_transfer_fee())
 
         return res
