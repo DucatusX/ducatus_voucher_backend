@@ -13,3 +13,5 @@ class FreezingVoucherSerializer(serializers.ModelSerializer):
         res = super().to_representation(instance)
         res['duc_amount'] = int(instance.voucher.transfer_set.first().duc_amount) // DECIMALS['DUC']
         res['usd_amount'] = instance.voucher.usd_amount
+
+        return res
