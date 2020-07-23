@@ -17,20 +17,22 @@ from ducatus_voucher.settings import WITHDRAW_CHECKER_TIMEOUT
 
 if __name__ == '__main__':
     while True:
-        frozen_vouchers = FreezingVoucher.objects.filter(withdrawn=False, lock_time__gt=timezone.now().timestamp())
+        frozen_vouchers = FreezingVoucher.objects.filter(withdrawn=False, lock_time__lt=timezone.now().timestamp())
         if not frozen_vouchers:
             print('all frozen vouchers have withdrawn\n', flush=True)
 
         interface = DucatuscoreInterface()
         for frozen_voucher in frozen_vouchers:
             try:
-                unspent_tx = interface.rpc.gettxout(frozen_voucher.voucher.transfer_set.first().tx_hash, 0)
-                if not unspent_tx:
-                    frozen_voucher.withdrawn = True
-                    frozen_voucher.save()
-                    print('voucher with id {id} withdrawn\n'.format(id=frozen_voucher.id), flush=True)
-                else:
-                    print('voucher with id {id} not withdrawn yet\n'.format(id=frozen_voucher.id), flush=True)
+                transfer_tx_hash = frozen_voucher.voucher.transfer_set.first().tx_hash
+                if transfer_tx_hash:
+                    unspent_tx = interface.rpc.gettxout(frozen_voucher.voucher.transfer_set.first().tx_hash, 0)
+                    if not unspent_tx:
+                        frozen_voucher.withdrawn = True
+                        frozen_voucher.save()
+                        print('voucher with id {id} withdrawn\n'.format(id=frozen_voucher.id), flush=True)
+                    else:
+                        print('voucher with id {id} not withdrawn yet\n'.format(id=frozen_voucher.id), flush=True)
             except Exception as e:
                 print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
 

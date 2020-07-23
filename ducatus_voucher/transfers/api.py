@@ -34,6 +34,8 @@ def make_transfer(voucher, duc_address, duc_public_key=None):
         rpc = DucatuscoreInterface()
         tx_hash = rpc.node_transfer(duc_address, duc_amount)
     except DucatuscoreInterfaceException as err:
+        transfer.transfer_status = 'ERROR'
+        transfer.save()
         raise APIException(detail=str(err))
 
     transfer.tx_hash = tx_hash
