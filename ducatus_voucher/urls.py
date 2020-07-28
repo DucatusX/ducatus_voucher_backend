@@ -9,7 +9,8 @@ from rest_framework.routers import DefaultRouter
 
 from ducatus_voucher.vouchers.views import VoucherViewSet
 from ducatus_voucher.transfers.views import TransferRequest
-from ducatus_voucher.freezing.views import get_withdraw_info, get_frozen_vouchers
+from ducatus_voucher.vouchers.views import get_withdraw_info, get_frozen_vouchers
+from ducatus_voucher.staking.views import generate_deposit, get_deposits
 
 
 schema_view = get_schema_view(
@@ -36,6 +37,8 @@ urlpatterns = [
     url(r'^api/v1/transfer/', TransferRequest.as_view()),
     url(r'^api/v1/get_withdraw_info/', get_withdraw_info),
     url(r'^api/v1/get_frozen_vouchers/', get_frozen_vouchers),
+    url(r'^api/v1/generate_deposit/', generate_deposit),
+    url(r'^api/v1/get_deposits/', get_deposits),
     url(r'^api/v1/', include(router.urls)),
     # url(r'^api/v1/vouchers_list/', VoucherListRequest.as_view()),
     url(r'^api/v1/rest-auth/', include('rest_auth.urls')),

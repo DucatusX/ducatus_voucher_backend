@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'ducatus_voucher.vouchers',
     'ducatus_voucher.transfers',
     'ducatus_voucher.freezing',
+    'ducatus_voucher.staking',
 ]
 
 MIDDLEWARE = [

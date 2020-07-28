@@ -12,8 +12,7 @@ const bobPublic = scriptArgs[1];
 
 const lockTime = bip65.encode({utc: Number(scriptArgs[2])});
 
-const voucherId = scriptArgs[3];
-const savingDir = scriptArgs[4];
+const savingDir = scriptArgs[3];
 
 const network = bitcoin.networks.bitcoin;
 network.public = 0x019da462;
@@ -31,7 +30,7 @@ const p2sh = bitcoin.payments.p2sh({redeem: {output: redeemScript, network}, net
 //адрес полученный из скрипта. Можем отправлять на него деньги. А вывести сможем, когда настанет момент locktime
 console.log('P2SH address\n', p2sh.address);
 
-saveLockTransactionInfo(redeemScript.toString('hex'), p2sh.address, voucherId, savingDir);
+saveLockTransactionInfo(redeemScript.toString('hex'), p2sh.address, lockTime, savingDir);
 
 
 function cltvCheckSigOutput (aQ, bQ, lockTime) {
@@ -54,12 +53,12 @@ function cltvCheckSigOutput (aQ, bQ, lockTime) {
 }
 
 function saveLockTransactionInfo(script, address, voucherId, savingDir) {
-    fs.writeFile(`${savingDir}/redeemScript-${voucherId}.txt`, script, function (err) {
+    fs.writeFile(`${savingDir}/redeemScript-${lockTime}.txt`, script, function (err) {
         if (err) return console.log(err);
         console.log("redeem script saved");
       });
 
-    fs.writeFile(`${savingDir}/lockAddress-${voucherId}.txt`, address, function (err) {
+    fs.writeFile(`${savingDir}/lockAddress-${lockTime}.txt`, address, function (err) {
         if (err) return console.log(err);
         console.log("lock address saved");
     });

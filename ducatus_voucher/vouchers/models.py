@@ -1,7 +1,13 @@
 from django.db import models
 import secrets
 
-from ducatus_voucher.freezing.models import FreezingVoucher
+from ducatus_voucher.freezing.models import CltvDetails
+
+
+class FreezingVoucher(models.Model):
+    wallet_id = models.CharField(max_length=50)
+    cltv_details = models.OneToOneField(CltvDetails, null=True, default=None, on_delete=models.CASCADE)
+    user_duc_address = models.CharField(max_length=50)
 
 
 class Voucher(models.Model):
