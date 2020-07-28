@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from ducatus_voucher.vouchers.models import Voucher, FreezingVoucher
+from ducatus_voucher.vouchers.models import Voucher, FreezingVoucher, VoucherInput
+from ducatus_voucher.freezing.serializers import CltvDetailsSerializer
 from ducatus_voucher.freezing.api import get_duc_transfer_fee
 from ducatus_voucher.consts import DECIMALS
 
@@ -19,10 +20,19 @@ class VoucherSerializer(serializers.ModelSerializer):
         }
 
 
+class VoucherInputSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VoucherInput
+        fields = '__all__'
+
+
 class FreezingVoucherSerializer(serializers.ModelSerializer):
+    cltv_details = CltvDetailsSerializer(read_only=True)
+    voucher_inputs = VoucherInputSerializer(many=True, read_only=True)
+
     class Meta:
         model = FreezingVoucher
-        fields = '__all__'
+        fields = ('id', 'wallet_id', 'user_duc_address', 'cltv_details', 'voucher_inputs')
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
