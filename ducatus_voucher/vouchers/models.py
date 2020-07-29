@@ -34,3 +34,5 @@ class VoucherInput(models.Model):
     mint_tx_hash = models.CharField(max_length=100)
     spent_tx_hash = models.CharField(max_length=100, null=True, default=None)
     amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)
+    minted_at = models.DateTimeField(auto_now_add=True)
+    spent_at = models.DateTimeField(null=True, default=None)

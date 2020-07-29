@@ -28,16 +28,18 @@ class VoucherInputSerializer(serializers.ModelSerializer):
 
 class FreezingVoucherSerializer(serializers.ModelSerializer):
     cltv_details = CltvDetailsSerializer(read_only=True)
-    voucher_inputs = VoucherInputSerializer(many=True, read_only=True)
+    voucherinput_set = VoucherInputSerializer(many=True, read_only=True)
 
     class Meta:
         model = FreezingVoucher
-        fields = ('id', 'wallet_id', 'user_duc_address', 'cltv_details', 'voucher_inputs')
+        fields = ('id', 'wallet_id', 'user_duc_address', 'cltv_details', 'voucherinput_set')
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
 
-        cltv_instance = res.cltv_details
+        res['tx_fee'] = get_duc_transfer_fee()
+
+        cltv_instance = instance.cltv_details
         res['withdrawn'] = cltv_instance.withdrawn
         res['lock_time'] = cltv_instance.lock_time
         res['redeem_script'] = cltv_instance.redeem_script

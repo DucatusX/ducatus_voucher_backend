@@ -6,10 +6,11 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import api_view
+from rest_framework.exceptions import NotFound
 
-from ducatus_voucher.vouchers.models import Voucher
+from ducatus_voucher.vouchers.models import Voucher, FreezingVoucher
 from ducatus_voucher.vouchers.serializers import VoucherSerializer, FreezingVoucherSerializer
-from ducatus_voucher.freezing.api import get_redeem_info, get_unused_frozen_vouchers
+from ducatus_voucher.freezing.api import get_unused_frozen_vouchers
 
 
 class VoucherViewSet(viewsets.ModelViewSet):
@@ -69,7 +70,11 @@ class VoucherViewSet(viewsets.ModelViewSet):
 def get_withdraw_info(request: Request):
     voucher_id = request.query_params.get('voucher_id')
 
-    frozen_voucher = get_redeem_info(voucher_id)
+    try:
+        frozen_voucher = FreezingVoucher.objects.get(id=voucher_id)
+    except FreezingVoucher.DoesNotExist:
+        raise NotFound
+
     response_data = FreezingVoucherSerializer().to_representation(frozen_voucher)
 
     return Response(response_data)

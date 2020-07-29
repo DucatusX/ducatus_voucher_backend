@@ -7,3 +7,9 @@ DECIMALS = {
 USD_RATES = {
     'DUC': 0.05
 }
+
+DIVIDENDS_INFO = {
+    5: 5,
+    13: 8,
+    34: 13,
+}

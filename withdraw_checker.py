@@ -1,9 +1,8 @@
 import os
 import sys
 import time
-import json
 import traceback
-import requests
+import datetime
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ducatus_voucher.settings')
 import django
@@ -12,93 +11,80 @@ django.setup()
 
 from django.utils import timezone
 
-from ducatus_voucher.litecoin_rpc import DucatuscoreInterface
-from ducatus_voucher.freezing.models import CltvDetails
-from ducatus_voucher.vouchers.models import FreezingVoucher, VoucherInput
+from ducatus_voucher.vouchers.models import FreezingVoucher
 from ducatus_voucher.staking.models import Deposit, DepositInput
+from ducatus_voucher.transfers.api import send_dividends
 from ducatus_voucher.settings import WITHDRAW_CHECKER_TIMEOUT
 
-DUC_API_URL = 'https://ducapi.rocknblock.io/api/DUC/mainnet/address/{duc_address}'
+
+class DucApiError(Exception):
+    pass
 
 
 def voucher_checker():
-    vouchers_to_withdraw = FreezingVoucher.objects.filter(cltv_details__withdrawn=False,
-                                                          cltv_details__lock_time__lt=timezone.now().timestamp())
+    vouchers_to_withdraw = FreezingVoucher.objects.filter(cltv_details__withdrawn=False)
 
     if not vouchers_to_withdraw:
-        print('all vouchers have withdrawn at {}\n'.format(timezone.now()), flush=True)
+        print('all vouchers have withdrawn at {}'.format(timezone.now()), flush=True)
 
     for voucher in vouchers_to_withdraw:
         lock_address = voucher.cltv_details.locked_duc_address
-        tx_inputs = json.loads(requests.get(DUC_API_URL.format(duc_address=lock_address)).content.decode())
 
-        for tx_input in tx_inputs:
-            mint_tx_hash = tx_input['mintTxid']
-            spent_tx_hash = tx_input['spentTxid']
-            try:
-                voucher_input = VoucherInput.objects.get(mint_tx_hash=mint_tx_hash)
-                if not voucher_input.spent_tx_hash:
-                    voucher_input.spent_tx_hash = spent_tx_hash
-            except VoucherInput.DoesNotExist:
-                voucher_input = VoucherInput()
-                voucher_input.deposit = voucher
-                voucher_input.mint_tx_hash = mint_tx_hash
-                voucher_input.tx_vout = tx_input['mintIndex']
-                voucher_input.amount = tx_input['value']
-                if spent_tx_hash:
-                    voucher_input.spent_tx_hash = spent_tx_hash
-
-            voucher_input.save()
-
-        if all([deposit_input.spent_tx_hash for deposit_input in voucher.depositinput_set.all()]):
-            voucher.cltv_details.withdrawn = False
+        print('lock address', lock_address, flush=True)
+        all_voucher_inputs = voucher.voucherinput_set.all()
+        if voucher.cltv_details.lock_time <= timezone.now().timestamp() and all_voucher_inputs and all(
+                [voucher_input.spent_tx_hash for voucher_input in all_voucher_inputs]):
+            voucher.cltv_details.withdrawn = True
             voucher.cltv_details.save()
-            print('deposit with id {id} withdrawn at {time}\n'.format(id=voucher.id, time=timezone.now()), flush=True)
+            print('voucher with id {id} withdrawn at {time}'.format(id=voucher.id, time=timezone.now()), flush=True)
+        elif all_voucher_inputs:
+            print('not all inputs spent in voucher with id {id} at {time}'.format(id=voucher.id, time=timezone.now()),
+                  flush=True)
         else:
-            print('not all inputs spent in deposit with {id} at {time}\n'.format(id=voucher.id, time=timezone.now()),
+            print('not any inputs in voucher with id {id} at {time}'.format(id=voucher.id, time=timezone.now()),
                   flush=True)
 
 
 def deposit_checker():
-    deposits_to_withdraw = Deposit.objects.filter(cltv_details__withdrawn=False,
-                                                  cltv_details__lock_time__lt=timezone.now().timestamp())
+    deposits_to_withdraw = Deposit.objects.filter(cltv_details__withdrawn=False)
 
     if not deposits_to_withdraw:
-        print('all deposits have withdrawn at {}\n'.format(timezone.now()), flush=True)
+        print('all deposits have withdrawn at {}'.format(timezone.now()), flush=True)
 
     for deposit in deposits_to_withdraw:
         lock_address = deposit.cltv_details.locked_duc_address
-        tx_inputs = json.loads(requests.get(DUC_API_URL.format(duc_address=lock_address)).content.decode())
 
-        for tx_input in tx_inputs:
-            mint_tx_hash = tx_input['mintTxid']
-            spent_tx_hash = tx_input['spentTxid']
+        print('lock address', lock_address, flush=True)
+        all_deposit_inputs = deposit.depositinput_set.all()
+        if deposit.cltv_details.lock_time <= timezone.now().timestamp() and all_deposit_inputs and all(
+                [deposit_input.spent_tx_hash for deposit_input in all_deposit_inputs]):
             try:
-                deposit_input = DepositInput.objects.get(mint_tx_hash=mint_tx_hash)
-                if not deposit_input.spent_tx_hash:
-                    deposit_input.spent_tx_hash = spent_tx_hash
-            except DepositInput.DoesNotExist:
-                deposit_input = DepositInput()
-                deposit_input.deposit = deposit
-                deposit_input.mint_tx_hash = mint_tx_hash
-                deposit_input.tx_vout = tx_input['mintIndex']
-                deposit_input.amount = tx_input['value']
-                if spent_tx_hash:
-                    deposit_input.spent_tx_hash = spent_tx_hash
-
-            deposit_input.save()
-
-        if all([deposit_input.spent_tx_hash for deposit_input in deposit.depositinput_set.all()]):
-            deposit.cltv_details.withdrawn = False
-            deposit.cltv_details.save()
-            print('deposit with id {id} withdrawn at {time}\n'.format(id=deposit.id, time=timezone.now()), flush=True)
+                first_input = Deposit.objects.filter(deposit=deposit).order_by('minted_at').first()
+                amount = int(first_input.amount * deposit.dividends/100 * deposit.lock_months/12)
+                print('calculated amount', amount, flush=True)
+                # if timezone.now() - first_input.minted_at >= datetime.timedelta(days=30*deposit.lock_months):
+                if timezone.now() - first_input.minted_at >= datetime.timedelta(minutes=deposit.lock_months):
+                    send_dividends(deposit.user_duc_address, amount)
+                    deposit.cltv_details.withdrawn = True
+                    deposit.cltv_details.save()
+                    print('deposit with id {id} withdrawn at {time}'.format(id=deposit.id, time=timezone.now()),
+                          flush=True)
+                else:
+                    print('deposit with id {id} not finalized yet'.format(id=deposit.id))
+            except Exception as e:
+                print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
+        elif all_deposit_inputs:
+            print('not all inputs spent in deposit with id {id} at {time}'.format(id=deposit.id, time=timezone.now()),
+                  flush=True)
         else:
-            print('not all inputs spent in deposit with {id} at {time}\n'.format(id=deposit.id, time=timezone.now()),
+            print('not any inputs in deposit with id {id} at {time}'.format(id=deposit.id, time=timezone.now()),
                   flush=True)
 
 
 if __name__ == '__main__':
     while True:
+        print('\ndeposits checking at {}'.format(timezone.now()), flush=True)
         deposit_checker()
+        print('\nvouchers checking at {}'.format(timezone.now()), flush=True)
         voucher_checker()
         time.sleep(WITHDRAW_CHECKER_TIMEOUT)

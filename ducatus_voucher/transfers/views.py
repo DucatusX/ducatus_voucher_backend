@@ -4,7 +4,7 @@ from rest_framework.request import Request
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from ducatus_voucher.transfers.api import validate_voucher, make_transfer
+from ducatus_voucher.transfers.api import validate_voucher, make_voucher_transfer
 from ducatus_voucher.transfers.serializers import TransferSerializer
 from ducatus_voucher.vouchers.models import FreezingVoucher
 from ducatus_voucher.freezing.api import generate_cltv, save_vout_number
@@ -33,11 +33,11 @@ class TransferRequest(APIView):
 
         voucher = validate_voucher(activation_code)
         if not voucher.lock_days:
-            transfer = make_transfer(voucher, duc_address)
+            transfer = make_voucher_transfer(voucher, duc_address)
 
             return Response(TransferSerializer().to_representation(transfer))
 
-        cltv_details = generate_cltv(user_public_key, voucher.lock_days)
+        cltv_details = generate_cltv(user_public_key, {'minutes': voucher.lock_days})
 
         freezing_details = FreezingVoucher()
         freezing_details.cltv_details = cltv_details
@@ -48,7 +48,7 @@ class TransferRequest(APIView):
         voucher.freezing_details = freezing_details
         voucher.save()
 
-        transfer = make_transfer(voucher, cltv_details.locked_duc_address)
+        transfer = make_voucher_transfer(voucher, cltv_details.locked_duc_address)
         save_vout_number(transfer)
 
         return Response(TransferSerializer().to_representation(transfer))

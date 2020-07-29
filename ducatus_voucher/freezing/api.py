@@ -13,17 +13,8 @@ from ducatus_voucher.settings import CLTV_DIR
 
 
 def get_unused_frozen_vouchers(wallet_ids):
-    vouchers = FreezingVoucher.objects.filter(wallet_id__in=wallet_ids, withdrawn=False)
+    vouchers = FreezingVoucher.objects.filter(wallet_id__in=wallet_ids, cltv_details__withdrawn=False)
     return vouchers
-
-
-def get_redeem_info(voucher_id):
-    try:
-        frozen_voucher = FreezingVoucher.objects.get(id=voucher_id)
-    except FreezingVoucher.DoesNotExist:
-        raise NotFound('frozen voucher with this id does not exist')
-
-    return frozen_voucher
 
 
 def save_cltv_data(frozen_at, redeem_script, locked_duc_address, user_public_key, lock_time):
@@ -40,10 +31,10 @@ def save_cltv_data(frozen_at, redeem_script, locked_duc_address, user_public_key
     return cltv_details
 
 
-def generate_cltv(receiver_public_key, lock_days):
+def generate_cltv(receiver_public_key, lock_timedelta):
     backend_public_key = BACKEND_PUBLIC_KEY
     frozen_at = timezone.now()
-    lock_date = frozen_at + datetime.timedelta(minutes=lock_days)
+    lock_date = frozen_at + datetime.timedelta(**lock_timedelta)
     lock_time = int(lock_date.timestamp())
 
     bash_command = 'node {script_path} {receiver_public_key} {backend_public_key} {lock_time} {files_dir}' \
