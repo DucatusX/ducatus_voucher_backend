@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from rest_framework import serializers
 
 from ducatus_voucher.staking.models import Deposit, DepositInput
@@ -23,4 +25,5 @@ class DepositSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         res = super().to_representation(instance)
         res['tx_fee'] = get_duc_transfer_fee()
+        res['ready_to_withdraw'] = instance.cltv_details.lock_time < timezone.now().timestamp()
         return res
