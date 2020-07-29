@@ -27,6 +27,11 @@ class VoucherInputSerializer(serializers.ModelSerializer):
         model = VoucherInput
         fields = '__all__'
 
+    def to_representation(self, instance):
+        res = super().to_representation(instance)
+        res['amount'] = hex(res['amount'] - get_duc_transfer_fee())
+        return res
+
 
 class FreezingVoucherSerializer(serializers.ModelSerializer):
     cltv_details = CltvDetailsSerializer(read_only=True)
@@ -45,5 +50,7 @@ class FreezingVoucherSerializer(serializers.ModelSerializer):
         transfer_instance = instance.voucher.transfer_set.first()
         res['duc_amount'] = int(transfer_instance.duc_amount) // DECIMALS['DUC']
         res['usd_amount'] = instance.voucher.usd_amount
+
+
 
         return res
