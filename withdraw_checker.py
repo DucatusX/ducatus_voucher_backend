@@ -12,7 +12,7 @@ django.setup()
 from django.utils import timezone
 
 from ducatus_voucher.vouchers.models import FreezingVoucher
-from ducatus_voucher.staking.models import Deposit
+from ducatus_voucher.staking.models import Deposit, DepositInput
 from ducatus_voucher.transfers.api import send_dividends
 from ducatus_voucher.settings import WITHDRAW_CHECKER_TIMEOUT
 
@@ -59,7 +59,7 @@ def deposit_checker():
         if deposit.cltv_details.lock_time <= timezone.now().timestamp() and all_deposit_inputs and all(
                 [deposit_input.spent_tx_hash for deposit_input in all_deposit_inputs]):
             try:
-                first_input = Deposit.objects.filter(deposit=deposit).order_by('minted_at').first()
+                first_input = DepositInput.objects.filter(deposit=deposit).order_by('minted_at').first()
                 amount = int(first_input.amount * deposit.dividends/100 * deposit.lock_months/12)
                 print('calculated amount', amount, flush=True)
                 # if timezone.now() - first_input.minted_at >= datetime.timedelta(days=30*deposit.lock_months):

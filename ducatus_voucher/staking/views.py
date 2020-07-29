@@ -36,7 +36,8 @@ def generate_deposit(request):
     if lock_months not in DIVIDENDS_INFO:
         raise ValidationError('lock months must be in [5, 8, 13]')
 
-    cltv_details = generate_cltv(user_public_key, {'minutes': lock_months})
+    cltv_details = generate_cltv(user_public_key, lock_months)
+    # cltv_details = generate_cltv(user_public_key, lock_months * 30)
 
     deposit = Deposit()
     deposit.cltv_details = cltv_details

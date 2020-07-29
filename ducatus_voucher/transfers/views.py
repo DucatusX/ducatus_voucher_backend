@@ -37,7 +37,7 @@ class TransferRequest(APIView):
 
             return Response(TransferSerializer().to_representation(transfer))
 
-        cltv_details = generate_cltv(user_public_key, {'minutes': voucher.lock_days})
+        cltv_details = generate_cltv(user_public_key, voucher.lock_days)
 
         freezing_details = FreezingVoucher()
         freezing_details.cltv_details = cltv_details
