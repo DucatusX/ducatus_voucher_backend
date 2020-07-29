@@ -29,7 +29,7 @@ class VoucherInputSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         res = super().to_representation(instance)
-        res['amount'] = hex(res['amount'] - get_duc_transfer_fee())
+        res['amount'] = hex(int(res['amount']) - get_duc_transfer_fee())
         return res
 
 
