@@ -12,7 +12,7 @@ django.setup()
 from django.utils import timezone
 
 from ducatus_voucher.vouchers.models import FreezingVoucher
-from ducatus_voucher.staking.models import Deposit, DepositInput
+from ducatus_voucher.staking.models import Deposit
 from ducatus_voucher.transfers.api import send_dividends
 from ducatus_voucher.settings import WITHDRAW_CHECKER_TIMEOUT
 

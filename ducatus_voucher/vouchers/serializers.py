@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from rest_framework import serializers
 
 from ducatus_voucher.vouchers.models import Voucher, FreezingVoucher, VoucherInput
@@ -38,20 +40,10 @@ class FreezingVoucherSerializer(serializers.ModelSerializer):
         res = super().to_representation(instance)
 
         res['tx_fee'] = get_duc_transfer_fee()
-
-        cltv_instance = instance.cltv_details
-        res['withdrawn'] = cltv_instance.withdrawn
-        res['lock_time'] = cltv_instance.lock_time
-        res['redeem_script'] = cltv_instance.redeem_script
-        res['locked_duc_address'] = cltv_instance.locked_duc_address
-        res['user_public_key'] = cltv_instance.user_public_key
-        res['frozen_at'] = cltv_instance.frozen_at
+        res['ready_to_withdraw'] = instance.cltv_details.lock_time < timezone.now().timestamp()
 
         transfer_instance = instance.voucher.transfer_set.first()
         res['duc_amount'] = int(transfer_instance.duc_amount) // DECIMALS['DUC']
         res['usd_amount'] = instance.voucher.usd_amount
-        res['tx_hash'] = transfer_instance.tx_hash
-        res['vout_number'] = transfer_instance.vout_number
-        res['sending_amount'] = int(transfer_instance.duc_amount - get_duc_transfer_fee())
 
         return res
