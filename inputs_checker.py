@@ -14,7 +14,7 @@ from django.utils import timezone
 
 from ducatus_voucher.vouchers.models import FreezingVoucher, VoucherInput
 from ducatus_voucher.staking.models import Deposit, DepositInput
-from ducatus_voucher.settings import INPITS_CHECKER_TIMEOUT
+from ducatus_voucher.settings import INPUTS_CHECKER_TIMEOUT
 
 DUC_API_URL = 'https://ducapi.rocknblock.io/api/DUC/mainnet/address/{duc_address}'
 
@@ -101,4 +101,4 @@ if __name__ == '__main__':
         deposit_inputs_checker()
         print('\nvouchers checking at {}'.format(timezone.now()), flush=True)
         voucher_inputs_checker()
-        time.sleep(INPITS_CHECKER_TIMEOUT)
+        time.sleep(INPUTS_CHECKER_TIMEOUT)
