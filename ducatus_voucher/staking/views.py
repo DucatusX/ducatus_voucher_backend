@@ -1,6 +1,9 @@
+import sys
+import traceback
+
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.decorators import api_view
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -9,6 +12,7 @@ from rest_framework.exceptions import NotFound
 from ducatus_voucher.freezing.api import generate_cltv
 from ducatus_voucher.staking.models import Deposit
 from ducatus_voucher.staking.serializers import DepositSerializer
+from ducatus_voucher.litecoin_rpc import DucatuscoreInterface
 from ducatus_voucher.consts import DIVIDENDS_INFO
 
 
@@ -85,3 +89,27 @@ def get_deposit_info(request: Request):
     response_data = DepositSerializer().to_representation(deposit)
 
     return Response(response_data)
+
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'raw_tx_hex': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['raw_tx_hex']
+    ),
+)
+@api_view(http_method_names=['POST'])
+def send_raw_transaction(request):
+    raw_tx_hex = request.data.get('raw_tx_hex')
+
+    try:
+        interface = DucatuscoreInterface()
+        tx_hash = interface.rpc.sendrawtransaction(raw_tx_hex)
+    except Exception as err:
+        print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
+        raise PermissionDenied(detail=str(err))
+
+    return Response({'success': True, 'tx_hash': tx_hash})

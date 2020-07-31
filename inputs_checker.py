@@ -34,7 +34,7 @@ def voucher_inputs_checker():
 
         try:
             tx_inputs = json.loads(requests.get(DUC_API_URL.format(duc_address=lock_address)).content.decode())
-        except DucApiError as e:
+        except Exception as e:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
             continue
 
@@ -70,7 +70,7 @@ def deposit_inputs_checker():
 
         try:
             tx_inputs = json.loads(requests.get(DUC_API_URL.format(duc_address=lock_address)).content.decode())
-        except DucApiError as e:
+        except Exception as e:
             print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
             continue
 
