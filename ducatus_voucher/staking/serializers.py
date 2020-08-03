@@ -25,6 +25,6 @@ class DepositSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         res = super().to_representation(instance)
         res['tx_fee'] = get_duc_transfer_fee()
-        res['ready_to_withdraw'] = instance.cltv_details.lock_time < (
-                    timezone.now() + datetime.timedelta(minutes=10)).timestamp()
+        res['ready_to_withdraw'] = instance.cltv_details.lock_time + datetime.timedelta(
+            minutes=10).seconds < timezone.now().timestamp()
         return res
