@@ -1,3 +1,4 @@
+import datetime
 from django.utils import timezone
 
 from rest_framework import serializers
@@ -40,7 +41,8 @@ class FreezingVoucherSerializer(serializers.ModelSerializer):
         res = super().to_representation(instance)
 
         res['tx_fee'] = get_duc_transfer_fee()
-        res['ready_to_withdraw'] = instance.cltv_details.lock_time < timezone.now().timestamp()
+        res['ready_to_withdraw'] = instance.cltv_details.lock_time < (
+                    timezone.now() + datetime.timedelta(minutes=10)).timestamp()
 
         transfer_instance = instance.voucher.transfer_set.first()
         res['duc_amount'] = int(transfer_instance.duc_amount) // DECIMALS['DUC']

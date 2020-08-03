@@ -1,3 +1,4 @@
+import datetime
 from django.utils import timezone
 
 from rest_framework import serializers
@@ -21,9 +22,9 @@ class DepositSerializer(serializers.ModelSerializer):
         model = Deposit
         fields = ('id', 'wallet_id', 'cltv_details', 'lock_months', 'dividends', 'user_duc_address', 'depositinput_set')
 
-
     def to_representation(self, instance):
         res = super().to_representation(instance)
         res['tx_fee'] = get_duc_transfer_fee()
-        res['ready_to_withdraw'] = instance.cltv_details.lock_time < timezone.now().timestamp()
+        res['ready_to_withdraw'] = instance.cltv_details.lock_time < (
+                    timezone.now() + datetime.timedelta(minutes=10)).timestamp()
         return res
