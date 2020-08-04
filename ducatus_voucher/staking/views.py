@@ -1,5 +1,6 @@
 import sys
 import traceback
+from django.db.utils import IntegrityError
 
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -116,5 +117,8 @@ def send_raw_transaction(request):
     except JSONRPCException as err:
         print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
         raise PermissionDenied(detail=str(err))
+    except IntegrityError:
+        print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
+        raise PermissionDenied(detail='-27: transaction already in block chain')
 
     return Response({'success': True, 'tx_hash': tx_hash})
