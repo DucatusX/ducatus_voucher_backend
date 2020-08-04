@@ -11,7 +11,7 @@ from ducatus_voucher.freezing.api import get_duc_transfer_fee
 class DepositInputSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepositInput
-        fields = ('tx_vout', 'mint_tx_hash', 'spent_tx_hash', 'amount')
+        fields = ('tx_vout', 'mint_tx_hash', 'spent_tx_hash', 'amount', 'minted_at')
 
 
 class DepositSerializer(serializers.ModelSerializer):
@@ -33,4 +33,7 @@ class DepositSerializer(serializers.ModelSerializer):
                 res['ready_to_withdraw'] = True
             res['deposited_at'] = deposit_at.timestamp()
             res['ended_at'] = ended_at.timestamp()
+
+        res['depositinput_set'] = sorted(res['depositinput_set'], key=lambda x: x['minted_at'])
+
         return res
