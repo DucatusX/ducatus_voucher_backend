@@ -20,8 +20,9 @@ class TransferRequest(APIView):
                 'duc_address': openapi.Schema(type=openapi.TYPE_STRING),
                 'duc_public_key': openapi.Schema(type=openapi.TYPE_STRING),
                 'wallet_id': openapi.Schema(type=openapi.TYPE_STRING),
+                'private_path': openapi.Schema(type=openapi.TYPE_STRING),
             },
-            required=['activation_code', 'duc_address']
+            required=['activation_code', 'duc_address', 'duc_public_key', 'wallet_id', 'private_path']
         ),
         responses={200: TransferSerializer()},
     )
@@ -30,6 +31,7 @@ class TransferRequest(APIView):
         duc_address = request.data.get('duc_address')
         user_public_key = request.data.get('duc_public_key')
         wallet_id = request.data.get('wallet_id')
+        private_path = request.data.get('private_path')
 
         voucher = validate_voucher(activation_code)
         if not voucher.lock_days:
@@ -37,7 +39,7 @@ class TransferRequest(APIView):
 
             return Response(TransferSerializer().to_representation(transfer))
 
-        cltv_details = generate_cltv(user_public_key, voucher.lock_days)
+        cltv_details = generate_cltv(user_public_key, voucher.lock_days, private_path)
 
         freezing_details = FreezingVoucher()
         freezing_details.cltv_details = cltv_details

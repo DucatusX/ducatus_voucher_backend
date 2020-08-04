@@ -8,3 +8,4 @@ class CltvDetails(models.Model):
     locked_duc_address = models.CharField(max_length=50)
     user_public_key = models.CharField(max_length=80)
     frozen_at = models.DateTimeField()
+    private_path = models.CharField(max_length=20, default='')

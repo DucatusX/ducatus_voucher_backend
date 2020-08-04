@@ -17,13 +17,15 @@ def get_unused_frozen_vouchers(wallet_ids):
     return vouchers
 
 
-def save_cltv_data(frozen_at, redeem_script, locked_duc_address, user_public_key, lock_time):
-    cltv_details = CltvDetails()
-    cltv_details.lock_time = lock_time
-    cltv_details.redeem_script = redeem_script
-    cltv_details.locked_duc_address = locked_duc_address
-    cltv_details.user_public_key = user_public_key
-    cltv_details.frozen_at = frozen_at
+def save_cltv_data(frozen_at, redeem_script, locked_duc_address, user_public_key, lock_time, private_path):
+    cltv_details = CltvDetails(
+        lock_time=lock_time,
+        redeem_script=redeem_script,
+        locked_duc_address=locked_duc_address,
+        user_public_key=user_public_key,
+        frozen_at=frozen_at,
+        private_path=private_path,
+    )
     cltv_details.save()
 
     print('cltv generated', cltv_details.__dict__, flush=True)
@@ -31,7 +33,7 @@ def save_cltv_data(frozen_at, redeem_script, locked_duc_address, user_public_key
     return cltv_details
 
 
-def generate_cltv(receiver_public_key, lock_days):
+def generate_cltv(receiver_public_key, lock_days, private_path):
     backend_public_key = BACKEND_PUBLIC_KEY
     frozen_at = timezone.now()
     lock_date = frozen_at + datetime.timedelta(minutes=lock_days)
@@ -54,7 +56,7 @@ def generate_cltv(receiver_public_key, lock_days):
     os.remove(os.path.join(CLTV_DIR, redeem_script_file))
     os.remove(os.path.join(CLTV_DIR, lock_address_file))
 
-    cltv_details = save_cltv_data(frozen_at, redeem_script, lock_address, receiver_public_key, lock_time)
+    cltv_details = save_cltv_data(frozen_at, redeem_script, lock_address, receiver_public_key, lock_time, private_path)
 
     return cltv_details
 

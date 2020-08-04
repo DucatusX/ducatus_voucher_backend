@@ -28,8 +28,9 @@ from ducatus_voucher.consts import DIVIDENDS_INFO
             'duc_public_key': openapi.Schema(type=openapi.TYPE_STRING),
             'wallet_id': openapi.Schema(type=openapi.TYPE_STRING),
             'lock_months': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'private_path': openapi.Schema(type=openapi.TYPE_INTEGER),
         },
-        required=['duc_address', 'duc_public_key', 'wallet_id', 'lock_months']
+        required=['duc_address', 'duc_public_key', 'wallet_id', 'lock_months', 'private_path']
     ),
     responses={200: DepositSerializer()},
 )
@@ -39,12 +40,13 @@ def generate_deposit(request):
     user_public_key = request.data.get('duc_public_key')
     wallet_id = request.data.get('wallet_id')
     lock_months = request.data.get('lock_months')
+    private_path = request.data.get('private_path')
 
     if lock_months not in DIVIDENDS_INFO:
         raise ValidationError('lock months must be in [5, 8, 13]')
 
-    cltv_details = generate_cltv(user_public_key, lock_months)
-    # cltv_details = generate_cltv(user_public_key, lock_months * 30)
+    cltv_details = generate_cltv(user_public_key, lock_months, private_path)
+    # cltv_details = generate_cltv(user_public_key, lock_months * 30, private_path)
 
     deposit = Deposit()
     deposit.cltv_details = cltv_details
