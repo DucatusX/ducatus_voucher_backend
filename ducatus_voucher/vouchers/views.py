@@ -1,3 +1,5 @@
+from django.db.utils import IntegrityError
+
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAdminUser
 from drf_yasg import openapi
@@ -7,10 +9,13 @@ from rest_framework.request import Request
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import PermissionDenied
 
 from ducatus_voucher.vouchers.models import Voucher, FreezingVoucher
 from ducatus_voucher.vouchers.serializers import VoucherSerializer, FreezingVoucherSerializer
 from ducatus_voucher.freezing.api import get_unused_frozen_vouchers
+from ducatus_voucher.litecoin_rpc import DucatuscoreInterface, JSONRPCException
+from ducatus_voucher.vouchers.models import UnlockVoucherTx
 
 
 class VoucherViewSet(viewsets.ModelViewSet):
@@ -94,3 +99,31 @@ def get_frozen_vouchers(request: Request):
     response_data = FreezingVoucherSerializer(many=True).to_representation(unused_frozen_vouchers)
 
     return Response(response_data)
+
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'raw_tx_hex': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['raw_tx_hex']
+    ),
+)
+@api_view(http_method_names=['POST'])
+def send_raw_transaction(request):
+    raw_tx_hex = request.data.get('raw_tx_hex')
+
+    try:
+        interface = DucatuscoreInterface()
+        tx_hash = interface.rpc.sendrawtransaction(raw_tx_hex)
+        print('unlock tx hash', tx_hash, flush=True)
+        unlock_tx = UnlockVoucherTx(tx_hash=tx_hash)
+        unlock_tx.save()
+    except IntegrityError:
+        raise PermissionDenied(detail='-27: transaction already in block chain')
+    except JSONRPCException as err:
+        raise PermissionDenied(detail=str(err))
+
+    return Response({'success': True, 'tx_hash': tx_hash})

@@ -12,7 +12,7 @@ from rest_framework.exceptions import NotFound
 from bitcoinrpc.authproxy import JSONRPCException
 
 from ducatus_voucher.freezing.api import generate_cltv
-from ducatus_voucher.freezing.models import UnlockTx
+from ducatus_voucher.staking.models import UnlockDepositTx
 from ducatus_voucher.staking.models import Deposit
 from ducatus_voucher.staking.serializers import DepositSerializer
 from ducatus_voucher.litecoin_rpc import DucatuscoreInterface
@@ -105,20 +105,18 @@ def get_deposit_info(request: Request):
     ),
 )
 @api_view(http_method_names=['POST'])
-def send_raw_transaction(request):
+def send_deposit_transaction(request):
     raw_tx_hex = request.data.get('raw_tx_hex')
 
     try:
         interface = DucatuscoreInterface()
         tx_hash = interface.rpc.sendrawtransaction(raw_tx_hex)
         print('unlock tx hash', tx_hash, flush=True)
-        unlock_tx = UnlockTx(tx_hash=tx_hash)
+        unlock_tx = UnlockDepositTx(tx_hash=tx_hash)
         unlock_tx.save()
-    except JSONRPCException as err:
-        print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
-        raise PermissionDenied(detail=str(err))
     except IntegrityError:
-        print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
         raise PermissionDenied(detail='-27: transaction already in block chain')
+    except JSONRPCException as err:
+        raise PermissionDenied(detail=str(err))
 
     return Response({'success': True, 'tx_hash': tx_hash})

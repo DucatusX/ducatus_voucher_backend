@@ -36,3 +36,8 @@ class VoucherInput(models.Model):
     amount = models.DecimalField(max_digits=MAX_DIGITS, decimal_places=0)
     minted_at = models.DateTimeField(auto_now_add=True)
     spent_at = models.DateTimeField(null=True, default=None)
+
+
+class UnlockVoucherTx(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    tx_hash = models.CharField(max_length=100, unique=True)
