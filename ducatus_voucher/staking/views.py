@@ -8,8 +8,10 @@ from rest_framework.decorators import api_view
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import NotFound
+from bitcoinrpc.authproxy import JSONRPCException
 
 from ducatus_voucher.freezing.api import generate_cltv
+from ducatus_voucher.freezing.models import UnlockTx
 from ducatus_voucher.staking.models import Deposit
 from ducatus_voucher.staking.serializers import DepositSerializer
 from ducatus_voucher.litecoin_rpc import DucatuscoreInterface
@@ -108,7 +110,10 @@ def send_raw_transaction(request):
     try:
         interface = DucatuscoreInterface()
         tx_hash = interface.rpc.sendrawtransaction(raw_tx_hex)
-    except Exception as err:
+        print('unlock tx hash', tx_hash, flush=True)
+        unlock_tx = UnlockTx(tx_hash=tx_hash)
+        unlock_tx.save()
+    except JSONRPCException as err:
         print('\n'.join(traceback.format_exception(*sys.exc_info())), flush=True)
         raise PermissionDenied(detail=str(err))
 
