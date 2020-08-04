@@ -6,6 +6,7 @@ from rest_framework import serializers
 from ducatus_voucher.staking.models import Deposit, DepositInput
 from ducatus_voucher.freezing.serializers import CltvDetailsSerializer
 from ducatus_voucher.freezing.api import get_duc_transfer_fee
+from ducatus_voucher.consts import DECIMALS
 
 
 class DepositInputSerializer(serializers.ModelSerializer):
@@ -27,12 +28,14 @@ class DepositSerializer(serializers.ModelSerializer):
         res['tx_fee'] = get_duc_transfer_fee()
         res['ready_to_withdraw'] = False
         if instance.depositinput_set.count() > 0:
-            deposit_at = instance.depositinput_set.order_by('minted_at').first().minted_at
+            first_input = instance.depositinput_set.order_by('minted_at').first()
+            deposit_at = first_input.minted_at
             ended_at = deposit_at + datetime.timedelta(minutes=instance.lock_months)
             if ended_at <= timezone.now():
                 res['ready_to_withdraw'] = True
             res['deposited_at'] = deposit_at.timestamp()
             res['ended_at'] = ended_at.timestamp()
+            res['duc_amount'] = int(first_input.amount) // DECIMALS['DUC']
 
         res['depositinput_set'] = sorted(res['depositinput_set'], key=lambda x: x['minted_at'])
 
