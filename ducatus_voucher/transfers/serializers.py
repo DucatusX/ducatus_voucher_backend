@@ -17,4 +17,5 @@ class TransferSerializer(serializers.ModelSerializer):
         res = super().to_representation(instance)
         res['usd_amount'] = instance.voucher.usd_amount
         res['duc_amount'] = int(res['duc_amount']) // DECIMALS['DUC']
+        res['lock_days'] = instance.voucher.lock_days
         return res
