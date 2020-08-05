@@ -36,7 +36,7 @@ def save_cltv_data(frozen_at, redeem_script, locked_duc_address, user_public_key
 def generate_cltv(receiver_public_key, lock_days, private_path):
     backend_public_key = BACKEND_PUBLIC_KEY
     frozen_at = timezone.now()
-    lock_date = frozen_at + datetime.timedelta(minutes=lock_days)
+    lock_date = frozen_at + datetime.timedelta(days=lock_days)
     lock_time = int(lock_date.timestamp())
 
     bash_command = 'node {script_path} {receiver_public_key} {backend_public_key} {lock_time} {files_dir}' \

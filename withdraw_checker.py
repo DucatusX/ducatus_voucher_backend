@@ -62,8 +62,7 @@ def deposit_checker():
                 first_input = DepositInput.objects.filter(deposit=deposit).order_by('minted_at').first()
                 amount = int(first_input.amount * deposit.dividends/100 * deposit.lock_months/12)
                 print('calculated amount', amount, flush=True)
-                # if timezone.now() - first_input.minted_at >= datetime.timedelta(days=30*deposit.lock_months):
-                if timezone.now() - first_input.minted_at >= datetime.timedelta(minutes=deposit.lock_months):
+                if timezone.now() - first_input.minted_at >= datetime.timedelta(days=30*deposit.lock_months):
                     send_dividends(deposit.user_duc_address, amount)
                     deposit.cltv_details.withdrawn = True
                     deposit.cltv_details.save()
