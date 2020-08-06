@@ -30,7 +30,7 @@ class DepositSerializer(serializers.ModelSerializer):
         if instance.depositinput_set.count() > 0:
             first_input = instance.depositinput_set.order_by('minted_at').first()
             deposit_at = first_input.minted_at
-            ended_at = deposit_at + datetime.timedelta(minutes=instance.lock_months)
+            ended_at = deposit_at + datetime.timedelta(days=30*instance.lock_months)
             if ended_at <= timezone.now():
                 res['ready_to_withdraw'] = True
             res['deposited_at'] = deposit_at.timestamp()
