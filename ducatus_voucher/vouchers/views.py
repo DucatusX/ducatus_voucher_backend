@@ -16,6 +16,7 @@ from ducatus_voucher.vouchers.serializers import VoucherSerializer, FreezingVouc
 from ducatus_voucher.freezing.api import get_unused_frozen_vouchers
 from ducatus_voucher.litecoin_rpc import DucatuscoreInterface, JSONRPCException
 from ducatus_voucher.vouchers.models import UnlockVoucherTx
+from ducatus_voucher.settings import API_KEY
 
 
 class VoucherViewSet(viewsets.ModelViewSet):
@@ -127,3 +128,36 @@ def send_raw_transaction(request):
         raise PermissionDenied(detail=str(err))
 
     return Response({'success': True, 'tx_hash': tx_hash})
+
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'api_key': openapi.Schema(type=openapi.TYPE_STRING),
+            'voucher_code': openapi.Schema(type=openapi.TYPE_STRING),
+            'usd_amount': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            'lock_days': openapi.Schema(type=openapi.TYPE_INTEGER),
+        },
+        required=['api_key', 'voucher_code', 'usd_amount']
+    ),
+    responses={200: VoucherSerializer()}
+)
+@api_view(http_method_names=['POST'])
+def register_voucher(request: Request):
+    api_key = request.data.get('api_key')
+    if api_key != API_KEY:
+        raise PermissionDenied(detail='invalid api key')
+
+    request.data.pop('api_key')
+    voucher_data = request.data
+
+    serializer = VoucherSerializer(data=voucher_data)
+    if serializer.is_valid():
+        serializer.save()
+    else:
+        raise ValidationError(detail={'description': serializer.errors, 'voucher': voucher_data})
+
+    return Response(serializer.data)
