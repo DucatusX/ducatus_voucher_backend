@@ -1,3 +1,5 @@
+import json
+import requests
 from decimal import Decimal
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -7,7 +9,8 @@ from django.utils import timezone
 from ducatus_voucher.vouchers.models import Voucher
 from ducatus_voucher.transfers.models import Transfer
 from ducatus_voucher.litecoin_rpc import DucatuscoreInterface, DucatuscoreInterfaceException
-from ducatus_voucher.consts import DECIMALS, USD_RATES
+from ducatus_voucher.consts import DECIMALS
+from ducatus_voucher.settings import RATES_API_URL
 
 
 def validate_voucher(activation_code):
@@ -77,5 +80,6 @@ def confirm_transfer(message):
 
 
 def convert_usd2duc(usd_amount):
-    duc_amount = Decimal(str(usd_amount / USD_RATES['DUC'])) * DECIMALS['DUC']
+    duc_usd_rate = json.loads(requests.get(RATES_API_URL.format(fsym='DUC', tsyms='USD')).content).get('USD')
+    duc_amount = Decimal(str(usd_amount / duc_usd_rate)) * DECIMALS['DUC']
     return duc_amount

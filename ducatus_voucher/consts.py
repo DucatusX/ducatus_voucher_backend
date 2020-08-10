@@ -4,10 +4,6 @@ DECIMALS = {
     'DUC': 10 ** 8,
 }
 
-USD_RATES = {
-    'DUC': 0.06
-}
-
 DIVIDENDS_INFO = {
     5: 8,
     13: 13,
