@@ -61,6 +61,46 @@ def generate_deposit(request):
 
 
 @swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'duc_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'first_user_public_key': openapi.Schema(type=openapi.TYPE_STRING),
+            'second_user_public_key': openapi.Schema(type=openapi.TYPE_STRING),
+            'wallet_id': openapi.Schema(type=openapi.TYPE_STRING),
+            'private_path': openapi.Schema(type=openapi.TYPE_INTEGER),
+        },
+        required=['duc_address', 'first_user_public_key', 'second_user_public_key',
+                  'wallet_id', 'lock_months', 'private_path']
+    ),
+    responses={200: DepositSerializer()},
+)
+@api_view(http_method_names=['POST'])
+def generate_deposit_for_three_years(request):
+    duc_address = request.data.get('duc_address')
+    first_user_public_key = request.data.get('first_user_public_key')
+    second_user_public_key = request.data.get('second_user_public_key')
+    wallet_id = request.data.get('wallet_id')
+    lock_months = 36
+    private_path = request.data.get('private_path')
+
+    cltv_details = generate_cltv(first_user_public_key, lock_months, private_path, second_user_public_key)
+
+    deposit = Deposit(
+        cltv_details=cltv_details,
+        wallet_id=wallet_id,
+        lock_months=lock_months,
+        user_duc_address=duc_address,
+        dividends=21,
+    )
+    deposit.save()
+
+    response_data = DepositSerializer().to_representation(deposit)
+    return Response(response_data)
+
+
+@swagger_auto_schema(
     method='get',
     manual_parameters=[openapi.Parameter('wallet_ids', openapi.IN_QUERY, type=openapi.TYPE_ARRAY,
                                          items=openapi.Items(type=openapi.TYPE_STRING))],
