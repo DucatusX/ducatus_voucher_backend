@@ -32,8 +32,8 @@ def save_cltv_data(frozen_at, redeem_script, locked_duc_address, user_public_key
     return cltv_details
 
 
-def generate_cltv(receiver_public_key, lock_days, private_path, second_pub_key=None):
-    backend_public_key = BACKEND_PUBLIC_KEY if second_pub_key is None else second_pub_key
+def generate_cltv(receiver_public_key, lock_days, private_path, sender_pub_key=None):
+    backend_public_key = BACKEND_PUBLIC_KEY if sender_pub_key is None else sender_pub_key
     frozen_at = timezone.now()
     lock_date = frozen_at + datetime.timedelta(days=lock_days)
     lock_time = int(lock_date.timestamp())

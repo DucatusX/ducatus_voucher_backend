@@ -66,12 +66,12 @@ def generate_deposit(request):
         type=openapi.TYPE_OBJECT,
         properties={
             'duc_address': openapi.Schema(type=openapi.TYPE_STRING),
-            'first_user_public_key': openapi.Schema(type=openapi.TYPE_STRING),
-            'second_user_public_key': openapi.Schema(type=openapi.TYPE_STRING),
+            'receiver_user_public_key': openapi.Schema(type=openapi.TYPE_STRING),
+            'sender_user_public_key': openapi.Schema(type=openapi.TYPE_STRING),
             'wallet_id': openapi.Schema(type=openapi.TYPE_STRING),
             'private_path': openapi.Schema(type=openapi.TYPE_INTEGER),
         },
-        required=['duc_address', 'first_user_public_key', 'second_user_public_key',
+        required=['duc_address', 'receiver_user_public_key', 'sender_user_public_key',
                   'wallet_id', 'lock_months', 'private_path']
     ),
     responses={200: DepositSerializer()},
@@ -79,13 +79,13 @@ def generate_deposit(request):
 @api_view(http_method_names=['POST'])
 def generate_deposit_for_three_years(request):
     duc_address = request.data.get('duc_address')
-    first_user_public_key = request.data.get('first_user_public_key')
-    second_user_public_key = request.data.get('second_user_public_key')
+    receiver_user_public_key = request.data.get('receiver_user_public_key')
+    sender_user_public_key = request.data.get('sender_user_public_key')
     wallet_id = request.data.get('wallet_id')
     lock_months = 36
     private_path = request.data.get('private_path')
 
-    cltv_details = generate_cltv(first_user_public_key, lock_months, private_path, second_user_public_key)
+    cltv_details = generate_cltv(receiver_user_public_key, lock_months, private_path, sender_user_public_key)
 
     deposit = Deposit(
         cltv_details=cltv_details,
