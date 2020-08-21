@@ -69,10 +69,11 @@ def generate_deposit(request):
             'receiver_user_public_key': openapi.Schema(type=openapi.TYPE_STRING),
             'sender_user_public_key': openapi.Schema(type=openapi.TYPE_STRING),
             'wallet_id': openapi.Schema(type=openapi.TYPE_STRING),
+            'lock_days': openapi.Schema(type=openapi.TYPE_INTEGER),
             'private_path': openapi.Schema(type=openapi.TYPE_INTEGER),
         },
         required=['duc_address', 'receiver_user_public_key', 'sender_user_public_key',
-                  'wallet_id', 'lock_months', 'private_path']
+                  'wallet_id', 'lock_days', 'private_path']
     ),
     responses={200: DepositSerializer()},
 )
@@ -82,17 +83,18 @@ def generate_deposit_for_three_years(request):
     receiver_user_public_key = request.data.get('receiver_user_public_key')
     sender_user_public_key = request.data.get('sender_user_public_key')
     wallet_id = request.data.get('wallet_id')
-    lock_months = 36
+    lock_days = request.data.get('lock_days')
     private_path = request.data.get('private_path')
 
-    cltv_details = generate_cltv(receiver_user_public_key, lock_months, private_path, sender_user_public_key)
+    cltv_details = generate_cltv(receiver_user_public_key, lock_days, private_path, sender_user_public_key)
 
+    lock_months = 30 // lock_days
     deposit = Deposit(
         cltv_details=cltv_details,
         wallet_id=wallet_id,
         lock_months=lock_months,
         user_duc_address=duc_address,
-        dividends=21,
+        dividends=0,
     )
     deposit.save()
 
