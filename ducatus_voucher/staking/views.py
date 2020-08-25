@@ -78,7 +78,7 @@ def generate_deposit(request):
     responses={200: DepositSerializer()},
 )
 @api_view(http_method_names=['POST'])
-def generate_deposit_for_three_years(request):
+def generate_deposit_without_dividends(request):
     duc_address = request.data.get('duc_address')
     receiver_user_public_key = request.data.get('receiver_user_public_key')
     sender_user_public_key = request.data.get('sender_user_public_key')

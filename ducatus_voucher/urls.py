@@ -13,7 +13,7 @@ from ducatus_voucher.vouchers.views import get_withdraw_info, get_frozen_voucher
     register_voucher
 from ducatus_voucher.staking.views import (generate_deposit, get_deposits,
                                            get_deposit_info, send_deposit_transaction,
-                                           generate_deposit_for_three_years)
+                                           generate_deposit_without_dividends)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -39,7 +39,7 @@ urlpatterns = [
     url(r'^api/v1/get_withdraw_info/', get_withdraw_info),
     url(r'^api/v1/get_frozen_vouchers/', get_frozen_vouchers),
     url(r'^api/v1/generate_deposit/', generate_deposit),
-    url(r'^api/v1/generate_deposit_for_three_years/', generate_deposit_for_three_years),
+    url(r'^api/v1/generate_deposit_without_dividends/', generate_deposit_without_dividends),
     url(r'^api/v1/get_deposits/', get_deposits),
     url(r'^api/v1/get_deposit_info', get_deposit_info),
     url(r'^api/v1/send_raw_transaction', send_raw_transaction),
