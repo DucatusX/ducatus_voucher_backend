@@ -18,6 +18,7 @@ class DepositInputSerializer(serializers.ModelSerializer):
 class DepositSerializer(serializers.ModelSerializer):
     cltv_details = CltvDetailsSerializer(read_only=True)
     depositinput_set = DepositInputSerializer(many=True, read_only=True)
+    lock_months = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Deposit

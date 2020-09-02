@@ -7,7 +7,6 @@ from ducatus_voucher.consts import MAX_DIGITS
 class Deposit(models.Model):
     wallet_id = models.CharField(max_length=50)
     cltv_details = models.OneToOneField(CltvDetails, null=True, default=None, on_delete=models.CASCADE)
-    lock_months = models.IntegerField()
     dividends = models.IntegerField(default=5)
     user_duc_address = models.CharField(max_length=50)
     dividends_sent = models.BooleanField(default=False)

@@ -1,5 +1,3 @@
-import sys
-import traceback
 from django.db.utils import IntegrityError
 
 from rest_framework.response import Response
@@ -52,7 +50,6 @@ def generate_deposit(request):
     deposit = Deposit()
     deposit.cltv_details = cltv_details
     deposit.wallet_id = wallet_id
-    deposit.lock_months = lock_months
     deposit.user_duc_address = duc_address
     deposit.dividends = DIVIDENDS_INFO[lock_months]
     deposit.save()
@@ -90,11 +87,9 @@ def generate_deposit_without_dividends(request):
 
     cltv_details = generate_cltv(receiver_user_public_key, lock_days, private_path, sender_user_public_key)
 
-    lock_months = 30 // lock_days
     deposit = Deposit(
         cltv_details=cltv_details,
         wallet_id=wallet_id,
-        lock_months=lock_months,
         user_duc_address=duc_address,
         dividends=0,
     )
