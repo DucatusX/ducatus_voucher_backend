@@ -12,6 +12,7 @@ from rest_framework.exceptions import NotFound
 from bitcoinrpc.authproxy import JSONRPCException
 
 from ducatus_voucher.freezing.api import generate_cltv
+from ducatus_voucher.freezing.models import CltvDetails
 from ducatus_voucher.staking.models import UnlockDepositTx
 from ducatus_voucher.staking.models import Deposit
 from ducatus_voucher.staking.serializers import DepositSerializer
@@ -45,7 +46,8 @@ def generate_deposit(request):
     if lock_months not in DIVIDENDS_INFO:
         raise ValidationError('lock months must be in [5, 8, 13]')
 
-    cltv_details = generate_cltv(user_public_key, lock_months * 30, private_path)
+    lock_days = CltvDetails.month_to_days(lock_months)
+    cltv_details = generate_cltv(user_public_key, lock_days, private_path)
 
     deposit = Deposit()
     deposit.cltv_details = cltv_details

@@ -1,5 +1,6 @@
 import datetime as dt
 
+from dateutil.relativedelta import relativedelta
 from django.db import models
 
 
@@ -18,4 +19,11 @@ class CltvDetails(models.Model):
         finish = dt.datetime.fromtimestamp(finish_timestamp)
         timedelta = finish - start
         days = timedelta.days
+        return days
+
+    @staticmethod
+    def month_to_days(months, start_date=None):
+        start_date = start_date if start_date else dt.datetime.now().replace(microsecond=0)
+        lock_date = start_date + relativedelta(months=months)
+        days = (lock_date - start_date).days
         return days
