@@ -1,5 +1,3 @@
-import sys
-import traceback
 from django.db.utils import IntegrityError
 
 from rest_framework.response import Response
@@ -12,6 +10,7 @@ from rest_framework.exceptions import NotFound
 from bitcoinrpc.authproxy import JSONRPCException
 
 from ducatus_voucher.freezing.api import generate_cltv
+from ducatus_voucher.freezing.models import CltvDetails
 from ducatus_voucher.staking.models import UnlockDepositTx
 from ducatus_voucher.staking.models import Deposit
 from ducatus_voucher.staking.serializers import DepositSerializer
@@ -45,18 +44,58 @@ def generate_deposit(request):
     if lock_months not in DIVIDENDS_INFO:
         raise ValidationError('lock months must be in [5, 8, 13]')
 
-    cltv_details = generate_cltv(user_public_key, lock_months * 30, private_path)
+    lock_days = CltvDetails.month_to_days(lock_months)
+    cltv_details = generate_cltv(user_public_key, lock_days, private_path)
 
     deposit = Deposit()
     deposit.cltv_details = cltv_details
     deposit.wallet_id = wallet_id
-    deposit.lock_months = lock_months
     deposit.user_duc_address = duc_address
     deposit.dividends = DIVIDENDS_INFO[lock_months]
     deposit.save()
 
     response_data = DepositSerializer().to_representation(deposit)
 
+    return Response(response_data)
+
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'duc_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'receiver_user_public_key': openapi.Schema(type=openapi.TYPE_STRING),
+            'sender_user_public_key': openapi.Schema(type=openapi.TYPE_STRING),
+            'wallet_id': openapi.Schema(type=openapi.TYPE_STRING),
+            'lock_days': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'private_path': openapi.Schema(type=openapi.TYPE_INTEGER),
+        },
+        required=['duc_address', 'receiver_user_public_key', 'sender_user_public_key',
+                  'wallet_id', 'lock_days', 'private_path']
+    ),
+    responses={200: DepositSerializer()},
+)
+@api_view(http_method_names=['POST'])
+def generate_deposit_without_dividends(request):
+    duc_address = request.data.get('duc_address')
+    receiver_user_public_key = request.data.get('receiver_user_public_key')
+    sender_user_public_key = request.data.get('sender_user_public_key')
+    wallet_id = request.data.get('wallet_id')
+    lock_days = request.data.get('lock_days')
+    private_path = request.data.get('private_path')
+
+    cltv_details = generate_cltv(receiver_user_public_key, lock_days, private_path, sender_user_public_key)
+
+    deposit = Deposit(
+        cltv_details=cltv_details,
+        wallet_id=wallet_id,
+        user_duc_address=duc_address,
+        dividends=0,
+    )
+    deposit.save()
+
+    response_data = DepositSerializer().to_representation(deposit)
     return Response(response_data)
 
 

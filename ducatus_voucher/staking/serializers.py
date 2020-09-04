@@ -18,6 +18,7 @@ class DepositInputSerializer(serializers.ModelSerializer):
 class DepositSerializer(serializers.ModelSerializer):
     cltv_details = CltvDetailsSerializer(read_only=True)
     depositinput_set = DepositInputSerializer(many=True, read_only=True)
+    lock_months = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = Deposit
@@ -30,7 +31,7 @@ class DepositSerializer(serializers.ModelSerializer):
         if instance.depositinput_set.count() > 0:
             first_input = instance.depositinput_set.order_by('minted_at').first()
             deposit_at = first_input.minted_at
-            ended_at = deposit_at + datetime.timedelta(days=30*instance.lock_months)
+            ended_at = deposit_at + datetime.timedelta(days=instance.cltv_details.total_days())
             if ended_at <= timezone.now():
                 res['ready_to_withdraw'] = True
             res['deposited_at'] = deposit_at.timestamp()

@@ -60,10 +60,13 @@ def deposit_checker():
                 [deposit_input.spent_tx_hash for deposit_input in all_deposit_inputs]):
             try:
                 first_input = DepositInput.objects.filter(deposit=deposit).order_by('minted_at').first()
-                amount = int(first_input.amount * deposit.dividends/100 * deposit.lock_months/12)
+                amount = int(first_input.amount * deposit.dividends/100 * deposit.cltv_details.total_days() / 365)
                 print('calculated amount', amount, flush=True)
-                if timezone.now() - first_input.minted_at >= datetime.timedelta(days=30*deposit.lock_months):
-                    send_dividends(deposit.user_duc_address, amount)
+                if timezone.now() - first_input.minted_at >= datetime.timedelta(days=deposit.cltv_details.total_days()):
+                    if amount != 0:
+                        send_dividends(deposit.user_duc_address, amount)
+                    else:
+                        print(f'Does not send dividends for {deposit.user_duc_address} cause amount == 0')
                     deposit.cltv_details.withdrawn = True
                     deposit.cltv_details.save()
                     print('deposit with id {id} withdrawn at {time}'.format(id=deposit.id, time=timezone.now()),
