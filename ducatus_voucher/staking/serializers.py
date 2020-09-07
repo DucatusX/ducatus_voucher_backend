@@ -39,5 +39,6 @@ class DepositSerializer(serializers.ModelSerializer):
             res['duc_amount'] = int(first_input.amount) // DECIMALS['DUC']
 
         res['depositinput_set'] = sorted(res['depositinput_set'], key=lambda x: x['minted_at'])
+        res['lock_months'] = instance.cltv_details.total_days() // 30
 
         return res
