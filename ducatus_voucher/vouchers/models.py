@@ -26,6 +26,8 @@ class Voucher(models.Model):
         null=True, default=None,
         related_name='voucher'
     )
+    # Filled only if it was created by card payment. If yes, will
+    charge_id = models.IntegerField(null=True)
 
 
 class VoucherInput(models.Model):
