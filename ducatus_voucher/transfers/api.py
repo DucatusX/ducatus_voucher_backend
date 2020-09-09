@@ -1,10 +1,10 @@
 import json
-import requests
 from decimal import Decimal
 
+import requests
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework.exceptions import PermissionDenied, APIException
 from django.utils import timezone
+from rest_framework.exceptions import PermissionDenied, APIException
 
 from ducatus_voucher.vouchers.models import Voucher
 from ducatus_voucher.transfers.models import Transfer
@@ -79,7 +79,7 @@ def confirm_transfer(message):
     transfer.save()
 
     if transfer.voucher.charge_id:
-        transfer.voucher.register_in_lottery_by_charge()
+        transfer.voucher.register_in_lottery_by_charge(transfer)
 
 
 def convert_usd2duc(usd_amount):
