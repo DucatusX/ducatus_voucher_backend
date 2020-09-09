@@ -1,8 +1,10 @@
+import requests
 from django.db import models
 import secrets
 
 from ducatus_voucher.freezing.models import CltvDetails
 from ducatus_voucher.consts import MAX_DIGITS
+from ducatus_voucher import settings_local
 
 
 class FreezingVoucher(models.Model):
@@ -26,8 +28,22 @@ class Voucher(models.Model):
         null=True, default=None,
         related_name='voucher'
     )
-    # Filled only if it was created by card payment. If yes, will
+    # Filled only if it was created by card payment. If yes, it will register in lottery
     charge_id = models.IntegerField(null=True)
+
+    def register_in_lottery_by_charge(self):
+        domain = getattr(settings_local, 'EXCHANGE_DOMAIN', None)
+        if not domain:
+            raise NameError(f'Cant register in lottery voucher with id {self.id}, '
+                            'EXCHANGE_DOMAIN should be defined in settings_local.py')
+
+        url = 'https://{}/api/v1/register_voucher_in_lottery/'.format(domain)
+        data = {
+            "charge_id": self.charge_id
+        }
+        r = requests.post(url, json=data)
+        if r.status_code == 200:
+            print(f'Voucher {self.id} register in lottery successfully', flush=True)
 
 
 class VoucherInput(models.Model):

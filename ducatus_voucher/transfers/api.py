@@ -78,6 +78,9 @@ def confirm_transfer(message):
     transfer.transfer_status = 'CONFIRMED'
     transfer.save()
 
+    if transfer.voucher.charge_id:
+        transfer.voucher.register_in_lottery_by_charge()
+
 
 def convert_usd2duc(usd_amount):
     duc_usd_rate = json.loads(requests.get(RATES_API_URL.format(fsym='DUC', tsyms='USD')).content).get('USD')
