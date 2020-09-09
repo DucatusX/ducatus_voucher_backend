@@ -45,7 +45,7 @@ class Voucher(models.Model):
             "transfer": {
                 "duc_address": transfer.duc_address,
                 "tx_hash": transfer.tx_hash,
-                "amount": transfer.duc_amount,
+                "amount": int(transfer.duc_amount),
             },
         }
         r = requests.post(url, json=data)
