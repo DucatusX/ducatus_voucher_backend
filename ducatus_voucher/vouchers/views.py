@@ -140,6 +140,7 @@ def send_raw_transaction(request):
             'usd_amount': openapi.Schema(type=openapi.TYPE_INTEGER),
             'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
             'lock_days': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'charge_id': openapi.Schema(type=openapi.TYPE_BOOLEAN),
         },
         required=['api_key', 'voucher_code', 'usd_amount']
     ),
