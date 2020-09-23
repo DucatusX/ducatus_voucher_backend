@@ -162,3 +162,28 @@ def register_voucher(request: Request):
         raise ValidationError(detail={'description': serializer.errors, 'voucher': voucher_data})
 
     return Response(serializer.data)
+
+
+@swagger_auto_schema(
+    method='get',
+    manual_parameters=[openapi.Parameter('api_key', openapi.IN_QUERY, type=openapi.TYPE_STRING),
+                       openapi.Parameter('voucher_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)],
+)
+def get_voucher_activation_code(request: Request):
+    api_key = request.query_params.get('api_key')
+    if api_key != API_KEY:
+        raise PermissionDenied(detail='invalid api key')
+
+    voucher_id = request.query_params.get('voucher_id')
+
+    try:
+        voucher = Voucher.objects.get(id=voucher_id)
+    except Voucher.DoesNotExist:
+        raise NotFound(detail=f'voucher with id {voucher_id} not found')
+
+    response_data = {
+        'id': voucher.id,
+        'activation_code': voucher.activation_code,
+    }
+
+    return Response(response_data)
