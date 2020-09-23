@@ -169,6 +169,7 @@ def register_voucher(request: Request):
     manual_parameters=[openapi.Parameter('api_key', openapi.IN_QUERY, type=openapi.TYPE_STRING),
                        openapi.Parameter('voucher_id', openapi.IN_QUERY, type=openapi.TYPE_STRING)],
 )
+@api_view(http_method_names=['GET'])
 def get_voucher_activation_code(request: Request):
     api_key = request.query_params.get('api_key')
     if api_key != API_KEY:
