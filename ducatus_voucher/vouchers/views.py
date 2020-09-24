@@ -16,6 +16,7 @@ from ducatus_voucher.vouchers.serializers import VoucherSerializer, FreezingVouc
 from ducatus_voucher.freezing.api import get_unused_frozen_vouchers
 from ducatus_voucher.litecoin_rpc import DucatuscoreInterface, JSONRPCException
 from ducatus_voucher.vouchers.models import UnlockVoucherTx
+from ducatus_voucher.transfers.api import validate_voucher
 from ducatus_voucher.settings import API_KEY
 
 
@@ -181,6 +182,8 @@ def get_voucher_activation_code(request: Request):
         voucher = Voucher.objects.get(voucher_code=voucher_code)
     except Voucher.DoesNotExist:
         raise NotFound(detail=f'voucher with id {voucher_code} not found')
+
+    voucher = validate_voucher(voucher.activation_code)
 
     response_data = {
         'voucher_code': voucher.voucher_code,
