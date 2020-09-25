@@ -14,10 +14,12 @@ from rest_framework.exceptions import PermissionDenied
 from ducatus_voucher.vouchers.models import Voucher, FreezingVoucher
 from ducatus_voucher.vouchers.serializers import VoucherSerializer, FreezingVoucherSerializer
 from ducatus_voucher.freezing.api import get_unused_frozen_vouchers
-from ducatus_voucher.litecoin_rpc import DucatuscoreInterface, JSONRPCException
+from ducatus_voucher.litecoin_rpc import DucatuscoreInterface, JSONRPCException, DucatuscoreInterfaceException
 from ducatus_voucher.vouchers.models import UnlockVoucherTx
 from ducatus_voucher.transfers.api import validate_voucher
-from ducatus_voucher.settings import API_KEY
+from ducatus_voucher.consts import DECIMALS
+from ducatus_voucher.transfers.api import convert_usd2duc
+from ducatus_voucher.settings import API_KEY, DUC_CREDIT_CREDENTIALS
 
 
 class VoucherViewSet(viewsets.ModelViewSet):
@@ -191,3 +193,32 @@ def get_voucher_activation_code(request: Request):
     }
 
     return Response(response_data)
+
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'client_id': openapi.Schema(type=openapi.TYPE_STRING),
+            'client_secret': openapi.Schema(type=openapi.TYPE_STRING),
+            'duc_address': openapi.Schema(type=openapi.TYPE_STRING),
+            'usd_amount': openapi.Schema(type=openapi.TYPE_INTEGER),
+        },
+        required=['client_id', 'client_secret', 'duc_address', 'usd_amount']
+    ),
+)
+@api_view(http_method_names=['POST'])
+def credit_duc(request: Request):
+    if request.data.get('client_id') != DUC_CREDIT_CREDENTIALS['client_id'] or \
+            request.data.get('client_secret') != DUC_CREDIT_CREDENTIALS['client_secret']:
+        raise PermissionDenied(detail='client_id or client_secret is invalid')
+
+    duc_amount = convert_usd2duc(request.data.get('usd_amount'))
+    rpc = DucatuscoreInterface()
+    try:
+        tx_hash = rpc.node_transfer(request.data.get('duc_address'), duc_amount / DECIMALS['DUC'])
+    except DucatuscoreInterfaceException as err:
+        raise ValidationError(detail=str(err))
+
+    return Response({'success': True, 'tx_hash': tx_hash})
