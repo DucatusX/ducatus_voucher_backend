@@ -217,7 +217,7 @@ def credit_duc(request: Request):
     duc_amount = convert_usd2duc(request.data.get('usd_amount'))
     rpc = DucatuscoreInterface()
     try:
-        tx_hash = rpc.node_transfer(request.data.get('duc_address'), duc_amount / DECIMALS['DUC'])
+        tx_hash = rpc.node_transfer(request.data.get('duc_address'), duc_amount)
     except DucatuscoreInterfaceException as err:
         raise ValidationError(detail=str(err))
 
