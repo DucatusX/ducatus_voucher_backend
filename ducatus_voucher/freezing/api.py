@@ -12,7 +12,8 @@ from ducatus_voucher.vouchers.models import FreezingVoucher
 
 
 def get_unused_frozen_vouchers(wallet_ids):
-    vouchers = FreezingVoucher.objects.filter(wallet_id__in=wallet_ids, cltv_details__withdrawn=False)
+    vouchers = FreezingVoucher.objects.filter(wallet_id__in=wallet_ids, cltv_details__withdrawn=False,
+                                              voucher__isnull=False)
     return vouchers
 
 
@@ -40,12 +41,12 @@ def generate_cltv(receiver_public_key, lock_days, private_path, sender_pub_key=N
 
     bash_command = 'node {script_path} {receiver_public_key} {backend_public_key} {lock_time} {files_dir}' \
         .format(
-            script_path=os.path.join(CLTV_DIR, 'cltv_generation.js'),
-            receiver_public_key=receiver_public_key,
-            backend_public_key=backend_public_key,
-            lock_time=lock_time,
-            files_dir=CLTV_DIR
-        )
+        script_path=os.path.join(CLTV_DIR, 'cltv_generation.js'),
+        receiver_public_key=receiver_public_key,
+        backend_public_key=backend_public_key,
+        lock_time=lock_time,
+        files_dir=CLTV_DIR
+    )
     if os.system(bash_command):
         raise Exception('error due redeem script generation')
 
