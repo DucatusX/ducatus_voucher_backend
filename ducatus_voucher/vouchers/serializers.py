@@ -13,7 +13,7 @@ class VoucherSerializer(serializers.ModelSerializer):
     class Meta:
         model = Voucher
         fields = ('id', 'voucher_code', 'activation_code', 'usd_amount', 'is_active', 'is_used', 'publish_date',
-                  'activation_date', 'lock_days', 'charge_id',)
+                  'activation_date', 'lock_days', 'charge_id', 'payment_id')
         extra_kwargs = {
             'id': {'read_only': True},
             'activation_code': {'read_only': True},

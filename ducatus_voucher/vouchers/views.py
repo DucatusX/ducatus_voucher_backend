@@ -17,7 +17,6 @@ from ducatus_voucher.freezing.api import get_unused_frozen_vouchers
 from ducatus_voucher.litecoin_rpc import DucatuscoreInterface, JSONRPCException, DucatuscoreInterfaceException
 from ducatus_voucher.vouchers.models import UnlockVoucherTx
 from ducatus_voucher.transfers.api import validate_voucher
-from ducatus_voucher.consts import DECIMALS
 from ducatus_voucher.transfers.api import convert_usd2duc
 from ducatus_voucher.settings import API_KEY, DUC_CREDIT_CREDENTIALS
 
@@ -143,7 +142,8 @@ def send_raw_transaction(request):
             'usd_amount': openapi.Schema(type=openapi.TYPE_INTEGER),
             'is_active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
             'lock_days': openapi.Schema(type=openapi.TYPE_INTEGER),
-            'charge_id': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            'charge_id': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'payment_id': openapi.Schema(type=openapi.TYPE_INTEGER),
         },
         required=['api_key', 'voucher_code', 'usd_amount']
     ),

@@ -31,8 +31,9 @@ class Voucher(models.Model):
     )
     # Filled only if it was created by card payment. If yes, it will register in lottery
     charge_id = models.IntegerField(null=True)
+    payment_id = models.IntegerField(null=True, default=None)
 
-    def register_in_lottery_by_charge(self, transfer):
+    def register_in_lottery(self, transfer):
         print(f'Try to register Voucher {self.id} in lottery', flush=True)
         domain = getattr(settings_local, 'EXCHANGE_DOMAIN', None)
         if not domain:
@@ -42,6 +43,7 @@ class Voucher(models.Model):
         url = 'https://{}/api/v1/register_voucher_in_lottery/'.format(domain)
         data = {
             "charge_id": self.charge_id,
+            "payment_id": self.payment_id,
             "transfer": {
                 "duc_address": transfer.duc_address,
                 "tx_hash": transfer.tx_hash,

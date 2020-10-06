@@ -78,8 +78,8 @@ def confirm_transfer(message):
     transfer.transfer_status = 'CONFIRMED'
     transfer.save()
 
-    if transfer.voucher.charge_id:
-        transfer.voucher.register_in_lottery_by_charge(transfer)
+    if transfer.voucher.payment_id or transfer.voucher.charge_id:
+        transfer.voucher.register_in_lottery(transfer)
 
 
 def convert_usd2duc(usd_amount):
