@@ -11,7 +11,7 @@ def export_deposit_statistics():
         print('All deposits has been withdrawn, nothing to export', flush=True)
 
     stat_fn = f'staking-{str(timezone.now().date())}.csv'
-    with open(os.getcwd(), stat_fn, 'w') as csvfile:
+    with open(os.path.join(os.getcwd(), stat_fn), 'w') as csvfile:
         writer = csv.writer(csvfile)
         for deposit_input in unspent_dividends_inputs:
             writer.writerow(
