@@ -2,6 +2,7 @@ import os
 import csv
 from django.utils import timezone
 from ducatus_voucher.staking.models import DepositInput
+from ducatus_voucher.consts import DECIMALS
 
 
 def export_deposit_statistics():
@@ -17,7 +18,9 @@ def export_deposit_statistics():
             writer.writerow(
                 [
                     deposit_input.mint_tx_hash,
-                    deposit_input.amount,
-                    deposit_input.deposit.cltv_details.lock_time
+                    deposit_input.amount / DECIMALS['DUC'],
+                    str(timezone.datetime.utcfromtimestamp(deposit_input.deposit.cltv_details.lock_time))
                 ]
             )
+
+    print(f'Export completed for {unspent_dividends_inputs.count()} transactions', flush=True)
