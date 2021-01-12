@@ -36,14 +36,17 @@ def make_voucher_transfer(voucher, duc_address):
     try:
         rpc = DucatuscoreInterface()
         tx_hash = rpc.node_transfer(duc_address, duc_amount)
+        transfer.tx_hash = tx_hash
+        transfer.transfer_status = 'WAITING_FOR_CONFIRM'
+        transfer.save()
+        print(f'VOUCHER ACTIVATION: successful transfer {transfer.tx_hash} to {transfer.duc_address} '
+              f'for {transfer.duc_amount} DUC', flush=True)
     except DucatuscoreInterfaceException as err:
         transfer.transfer_status = 'ERROR'
         transfer.save()
+        print(f'VOUCHER ACTIVATION: failed transfer {transfer.duc_amount} DUC to {transfer.duc_address} '
+              f'with exception {str(err)}', flush=True)
         raise APIException(detail=str(err))
-
-    transfer.tx_hash = tx_hash
-    transfer.transfer_status = 'WAITING_FOR_CONFIRM'
-    transfer.save()
 
     voucher.is_used = True
     voucher.activation_date = timezone.now()

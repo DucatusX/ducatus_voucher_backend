@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from django.utils import timezone
 
 from ducatus_voucher.transfers.api import validate_voucher, make_voucher_transfer
 from ducatus_voucher.transfers.serializers import TransferSerializer
@@ -27,16 +28,17 @@ class TransferRequest(APIView):
         responses={200: TransferSerializer()},
     )
     def post(self, request: Request):
-        activation_code = request.data.get('activation_code')
-        duc_address = request.data.get('duc_address')
-        user_public_key = request.data.get('duc_public_key')
-        wallet_id = request.data.get('wallet_id')
-        private_path = request.data.get('private_path')
+        data = request.data
+        print(f'VOUCHER ACTIVATION: received message {data} at {timezone.now()}', flush=True)
+        activation_code = data['activation_code']
+        duc_address = data['duc_address']
+        user_public_key = data['duc_public_key']
+        wallet_id = data['wallet_id']
+        private_path = data['private_path']
 
         voucher = validate_voucher(activation_code)
         if not voucher.lock_days:
             transfer = make_voucher_transfer(voucher, duc_address)
-
             return Response(TransferSerializer().to_representation(transfer))
 
         cltv_details = generate_cltv(user_public_key, voucher.lock_days, private_path)
