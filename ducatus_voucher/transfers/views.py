@@ -30,13 +30,16 @@ class TransferRequest(APIView):
     def post(self, request: Request):
         data = request.data
         print(f'VOUCHER ACTIVATION: received message {data} at {timezone.now()}', flush=True)
+
         activation_code = data['activation_code']
+        voucher = validate_voucher(activation_code)
+
         duc_address = data['duc_address']
         user_public_key = data['duc_public_key']
         wallet_id = data['wallet_id']
         private_path = data['private_path']
 
-        voucher = validate_voucher(activation_code)
+
         if not voucher.lock_days:
             transfer = make_voucher_transfer(voucher, duc_address)
             return Response(TransferSerializer().to_representation(transfer))
