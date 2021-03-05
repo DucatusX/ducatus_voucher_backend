@@ -47,7 +47,7 @@ urlpatterns = [
     url(r'^api/v1/register_voucher', register_voucher),
     url(r'^api/v1/voucher_code', get_voucher_activation_code),
     url(r'^api/v1/credit_duc', credit_duc),
-    url(r'^api/v1/credit_duc', change_duc_rate),
+    url(r'^api/v1/change_duc_rate', change_duc_rate),
     url(r'^api/v1/', include(router.urls)),
     # url(r'^api/v1/vouchers_list/', VoucherListRequest.as_view()),
     url(r'^api/v1/rest-auth/', include('rest_auth.urls')),
