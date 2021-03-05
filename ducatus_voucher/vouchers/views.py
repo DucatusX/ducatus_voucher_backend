@@ -243,4 +243,4 @@ class ChangeDucRate(APIView):
         post_data['api-key'] = RATES_API_CHANGE_KEY
 
         res = requests.post(RATES_API_CHANGE_URL, data=post_data)
-        return Response({'success': True, 'rates': res})
+        return Response({'success': True, 'rates': res.json()})
