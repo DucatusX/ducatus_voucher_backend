@@ -11,7 +11,7 @@ from ducatus_voucher.vouchers.views import VoucherViewSet
 from ducatus_voucher.transfers.views import TransferRequest
 from ducatus_voucher.vouchers.views import get_withdraw_info, get_frozen_vouchers, send_raw_transaction, \
     register_voucher, get_voucher_activation_code, credit_duc
-from ducatus_voucher.vouchers.views import import ChangeDucRate
+from ducatus_voucher.vouchers.views import ChangeDucRate
 from ducatus_voucher.staking.views import (generate_deposit, get_deposits,
                                            get_deposit_info, send_deposit_transaction,
                                            generate_deposit_without_dividends)
