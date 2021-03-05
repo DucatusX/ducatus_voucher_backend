@@ -224,20 +224,19 @@ def credit_duc(request: Request):
 
     return Response({'success': True, 'tx_hash': tx_hash})
 
-@swagger_auto_schema(
-    method='post',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'DUC': openapi.Schema(type=openapi.TYPE_INTEGER),
-            'DUCX': openapi.Schema(type=openapi.TYPE_INTEGER),
-        },
-        required=[]
-    ),
-)
 class ChangeDucRate(APIView):
     permission_classes = [IsAdminUser]
 
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'DUC': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'DUCX': openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+            required=[]
+        )
+    )
     def post(self, request):
         post_data = request.data
         post_data['api-key'] = RATES_API_CHANGE_KEY
