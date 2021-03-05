@@ -10,6 +10,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.views import APIView
 
 from ducatus_voucher.vouchers.models import Voucher, FreezingVoucher
 from ducatus_voucher.vouchers.serializers import VoucherSerializer, FreezingVoucherSerializer
@@ -234,11 +235,12 @@ def credit_duc(request: Request):
         required=[]
     ),
 )
-@api_view(http_method_names=['POST'])
-@authentication_classes([IsAdminUser])
-def change_duc_rate(request: Request):
-    post_data = request.data
-    post_data['api-key'] = RATES_API_CHANGE_KEY
+class ChangeDucRate(APIView):
+    permission_classes = [IsAdminUser]
 
-    res = requests.post(RATES_API_CHANGE_URL, data=post_data)
-    return Response({'success': True, 'rates': res})
+    def post(self, request):
+        post_data = request.data
+        post_data['api-key'] = RATES_API_CHANGE_KEY
+
+        res = requests.post(RATES_API_CHANGE_URL, data=post_data)
+        return Response({'success': True, 'rates': res})
