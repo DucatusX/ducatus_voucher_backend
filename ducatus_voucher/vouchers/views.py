@@ -18,7 +18,7 @@ from ducatus_voucher.litecoin_rpc import DucatuscoreInterface, JSONRPCException,
 from ducatus_voucher.vouchers.models import UnlockVoucherTx
 from ducatus_voucher.transfers.api import validate_voucher
 from ducatus_voucher.transfers.api import convert_usd2duc
-from ducatus_voucher.settings import API_KEY, DUC_CREDIT_CREDENTIALS
+from ducatus_voucher.settings import API_KEY, DUC_CREDIT_CREDENTIALS, RATES_API_CHANGE_URL
 
 
 class VoucherViewSet(viewsets.ModelViewSet):
@@ -222,3 +222,20 @@ def credit_duc(request: Request):
         raise ValidationError(detail=str(err))
 
     return Response({'success': True, 'tx_hash': tx_hash})
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'DUC': openapi.Schema(type=openapi.TYPE_INTEGER),
+            'DUCX': openapi.Schema(type=openapi.TYPE_INTEGER),
+        },
+        required=[]
+    ),
+)
+@api_view(http_method_names=['POST'])
+@authentication_classes([IsAdminUser])
+def change_duc_rate(request: Request):
+    res = requests.post(RATES_API_CHANGE_URL, data={request.data})
+    return Response({'success': True, 'rates': res})
