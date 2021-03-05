@@ -1,3 +1,4 @@
+import requests
 from django.db.utils import IntegrityError
 
 from rest_framework import viewsets, status
