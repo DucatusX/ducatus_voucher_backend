@@ -1,3 +1,4 @@
+import requests
 from django.db.utils import IntegrityError
 
 from rest_framework import viewsets, status
@@ -7,9 +8,10 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.exceptions import ValidationError
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.exceptions import NotFound
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.views import APIView
 
 from ducatus_voucher.vouchers.models import Voucher, FreezingVoucher
 from ducatus_voucher.vouchers.serializers import VoucherSerializer, FreezingVoucherSerializer
@@ -18,7 +20,7 @@ from ducatus_voucher.litecoin_rpc import DucatuscoreInterface, JSONRPCException,
 from ducatus_voucher.vouchers.models import UnlockVoucherTx
 from ducatus_voucher.transfers.api import validate_voucher
 from ducatus_voucher.transfers.api import convert_usd2duc
-from ducatus_voucher.settings import API_KEY, DUC_CREDIT_CREDENTIALS
+from ducatus_voucher.settings import API_KEY, DUC_CREDIT_CREDENTIALS, RATES_API_CHANGE_URL, RATES_API_CHANGE_KEY
 
 
 class VoucherViewSet(viewsets.ModelViewSet):
@@ -222,3 +224,23 @@ def credit_duc(request: Request):
         raise ValidationError(detail=str(err))
 
     return Response({'success': True, 'tx_hash': tx_hash})
+
+class ChangeDucRate(APIView):
+    permission_classes = [IsAdminUser]
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'DUC': openapi.Schema(type=openapi.TYPE_INTEGER),
+                'DUCX': openapi.Schema(type=openapi.TYPE_INTEGER),
+            },
+            required=[]
+        )
+    )
+    def post(self, request):
+        post_data = request.data
+        post_data['api-key'] = RATES_API_CHANGE_KEY
+
+        res = requests.post(RATES_API_CHANGE_URL, data=post_data)
+        return Response({'success': True, 'rates': res.json()})
