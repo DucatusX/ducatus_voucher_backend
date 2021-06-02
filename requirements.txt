@@ -67,6 +67,6 @@ sqlparse==0.3.1
 tabulate==0.8.7
 two1==3.10.9
 uritemplate==3.0.1
-urllib3==1.25.9
+urllib3==1.26.5
 wcwidth==0.2.5
 websocket-client==0.57.0
