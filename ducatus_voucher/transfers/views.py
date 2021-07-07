@@ -1,3 +1,4 @@
+import json
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -32,6 +33,16 @@ class TransferRequest(APIView):
         print(f'VOUCHER ACTIVATION: received message {data} at {timezone.now()}', flush=True)
 
         activation_code = data['activation_code']
+
+        if activation_code.startswith('REF'):
+            crowdsale_url = 'https://tokenization.centuriongm.com/api/v1/activate_referral_voucher'
+            crowdsale_response = requests.post(crowdsale_url, data=data)
+            crowdsale_response_status = crowdsale_response.status_code
+            crowdsale_response_data = json.loads(crowdsale_response.content)
+
+            if crowdsale_response_status in (200, 403):
+                return Response(crowdsale_response_data, status=crowdsale_response_status)
+
         voucher = validate_voucher(activation_code)
 
         duc_address = data['duc_address']
