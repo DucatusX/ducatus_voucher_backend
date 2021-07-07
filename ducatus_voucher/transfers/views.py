@@ -39,7 +39,7 @@ class TransferRequest(APIView):
             crowdsale_url = 'https://tokenization.centuriongm.com/api/v1/activate_referral_voucher'
             crowdsale_response = requests.post(crowdsale_url, data=data)
             crowdsale_response_status = crowdsale_response.status_code
-            crowdsale_response_data = json.loads(crowdsale_response.content)
+            crowdsale_response_data = crowdsale_response.json()
 
             if crowdsale_response_status in (200, 403):
                 return Response(crowdsale_response_data, status=crowdsale_response_status)
