@@ -64,6 +64,7 @@ class TransferRequest(APIView):
         freezing_details.save()
 
         voucher.freezing_details = freezing_details
+        voucher.freezing_details_id = freezing_details.pk
         voucher.save()
 
         transfer = make_voucher_transfer(voucher, cltv_details.locked_duc_address)
