@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  db:
+    image: postgres
+    ports: 
+      - "5432"
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB_NAME}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  web:
+    build: .
+    # image: rnbdeploy/lesspad_backend
+    command: python manage.py runserver #0.0.0.0:8000
+    volumes:
+      - .:/code
+    env_file:
+      - ./.env
+    ports:
+      - "${DOCKER_EXPOSE_PORT?8000}:8000"
+    depends_on:
+      - db
